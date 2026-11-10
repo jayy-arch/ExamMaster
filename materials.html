@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - Study Materials</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="theme.js" defer></script>
+  <style>
+    .card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .btn-pdf {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+      padding: 7px 15px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, border-color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-pdf:hover { background: #fee2e2; border-color: #fca5a5; }
+    [data-theme="dark"] .btn-pdf { background: #2d0a0a; color: #f87171; border-color: #7f1d1d; }
+    [data-theme="dark"] .btn-pdf:hover { background: #450a0a; }
+
+    .add-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      margin-top: 40px;
+    }
+    .add-panel h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 20px; color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">Exam<span>Master</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="tools.html">Tools</a></li>
+      <li><a href="materials.html" class="active">Materials</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="science.html">Science</a></li>
+      <li><a href="feedback.html">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> Day Streak</div>
+      <select id="lang-selector" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="es">Espanol</option>
+        <option value="fr">Francais</option>
+        <option value="de">Deutsch</option>
+        <option value="pt">Portugues</option>
+        <option value="zh">Chinese</option>
+        <option value="ar">Arabic</option>
+        <option value="sw">Swahili</option>
+      </select>
+      <button class="voice-btn" onclick="openVoiceModal()">Voice</button>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
+    </div>
+  </nav>
+
+  <div class="voice-modal-overlay" id="voice-modal-overlay">
+    <div class="voice-modal">
+      <h2>Voice Assistant</h2>
+      <p class="vm-sub">Navigate Exam Master with your voice</p>
+      <button class="voice-orb" id="voice-orb" onclick="startListening()">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 19.93V22h2v-1.07A8 8 0 0 0 20 13h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.93z"/></svg>
+      </button>
+      <div class="voice-status" id="voice-status">Click the button to speak</div>
+      <div class="voice-output" id="voice-output"></div>
+      <div class="vm-commands">
+        <span class="vm-cmd" onclick="runQuickCommand('go home')">Home</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open tools')">Tools</span>
+      </div>
+      <button class="voice-close" onclick="closeVoiceModal()">Close</button>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <h1>Study Materials</h1>
+    <p>Your current and upcoming study content — download any material as a PDF</p>
+  </div>
+
+  <section class="section">
+
+    <h2 class="section-title" style="text-align:left;font-size:1.3rem;margin-bottom:20px;">Current</h2>
+    <div class="materials-grid">
+
+      <div class="material-card">
+        <span class="mat-badge current-badge">Current</span>
+        <h4>Algebra: Chapter 5 Quadratics</h4>
+        <p>Due: Nov 12, 2026</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
+        <small>65% complete</small>
+        <div class="card-actions">
+          <button class="btn-primary" style="font-size:0.8rem;padding:7px 15px;" onclick="markDone(this)">Mark Done</button>
+          <button class="btn-pdf" onclick="downloadMaterialPDF('Algebra: Chapter 5 Quadratics','Mathematics','Nov 12, 2026','65%','Quadratic equations, factorisation, completing the square, and the quadratic formula.')">PDF</button>
+        </div>
+      </div>
+
+      <div class="material-card">
+        <span class="mat-badge current-badge">Current</span>
+        <h4>Biology: Cell Division Notes</h4>
+        <p>Due: Nov 13, 2026</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+        <small>40% complete</small>
+        <div class="card-actions">
+          <button class="btn-primary" style="font-size:0.8rem;padding:7px 15px;" onclick="markDone(this)">Mark Done</button>
+          <button class="btn-pdf" onclick="downloadMaterialPDF('Biology: Cell Division Notes','Biology','Nov 13, 2026','40%','Mitosis, meiosis, cell cycle stages, chromosomes, and DNA replication.')">PDF</button>
+        </div>
+      </div>
+
+      <div class="material-card">
+        <span class="mat-badge current-badge">Current</span>
+        <h4>Mathematics: Trigonometry Intro</h4>
+        <p>Due: Nov 14, 2026</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+        <small>80% complete</small>
+        <div class="card-actions">
+          <button class="btn-primary" style="font-size:0.8rem;padding:7px 15px;" onclick="markDone(this)">Mark Done</button>
+          <button class="btn-pdf" onclick="downloadMaterialPDF('Mathematics: Trigonometry Intro','Mathematics','Nov 14, 2026','80%','Sin, cos, tan ratios, the unit circle, Pythagoras theorem, and angle rules.')">PDF</button>
+        </div>
+      </div>
+
+    </div>
+
+    <h2 class="section-title" style="text-align:left;font-size:1.3rem;margin:40px 0 20px;">Upcoming</h2>
+    <div class="materials-grid">
+
+      <div class="material-card">
+        <span class="mat-badge future-badge">Upcoming</span>
+        <h4>History: World War II Essay</h4>
+        <p>Due: Nov 20, 2026</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:10%"></div></div>
+        <small>10% complete</small>
+        <div class="card-actions">
+          <button class="btn-secondary" style="font-size:0.8rem;padding:7px 15px;">Start Now</button>
+          <button class="btn-pdf" onclick="downloadMaterialPDF('History: World War II Essay','History','Nov 20, 2026','10%','Causes of WWII, key events 1939-1945, turning points, Allied victory, and aftermath.')">PDF</button>
+        </div>
+      </div>
+
+      <div class="material-card">
+        <span class="mat-badge future-badge">Upcoming</span>
+        <h4>Chemistry: Periodic Table Test</h4>
+        <p>Due: Nov 25, 2026</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+        <small>Not started</small>
+        <div class="card-actions">
+          <button class="btn-secondary" style="font-size:0.8rem;padding:7px 15px;">Start Now</button>
+          <button class="btn-pdf" onclick="downloadMaterialPDF('Chemistry: Periodic Table Test','Chemistry','Nov 25, 2026','0%','Element symbols, atomic numbers, groups and periods, metal vs non-metal properties.')">PDF</button>
+        </div>
+      </div>
+
+      <div class="material-card">
+        <span class="mat-badge future-badge">Upcoming</span>
+        <h4>English: Shakespeare Reading</h4>
+        <p>Due: Nov 28, 2026</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+        <small>Not started</small>
+        <div class="card-actions">
+          <button class="btn-secondary" style="font-size:0.8rem;padding:7px 15px;">Start Now</button>
+          <button class="btn-pdf" onclick="downloadMaterialPDF('English: Shakespeare Reading','English','Nov 28, 2026','0%','Key themes, characters, quotes, and literary devices in selected Shakespeare works.')">PDF</button>
+        </div>
+      </div>
+
+      <div class="material-card">
+        <span class="mat-badge future-badge">Upcoming</span>
+        <h4>Physics: Forces and Motion</h4>
+        <p>Due: Dec 2, 2026</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+        <small>Not started</small>
+        <div class="card-actions">
+          <button class="btn-secondary" style="font-size:0.8rem;padding:7px 15px;">Start Now</button>
+          <button class="btn-pdf" onclick="downloadMaterialPDF('Physics: Forces and Motion','Physics','Dec 2, 2026','0%','Newtons three laws, velocity, acceleration, momentum, and resultant forces.')">PDF</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ADD NEW MATERIAL -->
+    <div class="add-panel">
+      <h3>Add New Material</h3>
+      <div class="form-group">
+        <label>Subject</label>
+        <input type="text" id="new-subject" placeholder="e.g. Mathematics" />
+      </div>
+      <div class="form-group">
+        <label>Topic</label>
+        <input type="text" id="new-topic" placeholder="e.g. Chapter 6 Fractions" />
+      </div>
+      <div class="form-group">
+        <label>Key Content (shown in PDF)</label>
+        <textarea id="new-content" style="min-height:80px;" placeholder="e.g. Fractions, decimals, percentages, simplifying, adding and subtracting fractions."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Due Date</label>
+        <input type="date" id="new-due" />
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="addMaterial()">Add Material</button>
+        <button class="btn-pdf" id="new-pdf-btn" style="display:none;" onclick="downloadNewMaterialPDF()">Download PDF</button>
+      </div>
+    </div>
+
+  </section>
+
+  <footer class="footer">
+    <p>Exam Master 2026 &mdash; Built for students who refuse to give up.</p>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="streak.js"></script>
+  <script src="voice.js"></script>
+  <script>
+
+    /* ===== MARK DONE ===== */
+    function markDone(btn) {
+      const card = btn.closest('.material-card');
+      card.querySelector('.progress-fill').style.width = '100%';
+      card.querySelector('small').textContent = '100% complete';
+      btn.textContent = 'Done';
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+    }
+
+    /* ===== DOWNLOAD PDF ===== */
+    function downloadMaterialPDF(title, subject, due, progress, content) {
+      const html = buildPDFHTML(title, subject, due, progress, content);
+      triggerDownload(html, title.replace(/[^a-zA-Z0-9]/g, '_') + '.html');
+    }
+
+    function buildPDFHTML(title, subject, due, progress, content) {
+      return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${escH(title)}</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; max-width:720px; margin:48px auto; color:#1a1b2e; line-height:1.75; padding:0 24px 60px; }
+    .header { border-bottom:3px solid #4f46e5; padding-bottom:20px; margin-bottom:32px; }
+    .badge { display:inline-block; background:#eef2ff; color:#4f46e5; border:1px solid #c7d2fe; padding:3px 12px; border-radius:20px; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px; }
+    h1 { font-size:1.9rem; font-weight:800; color:#1a1b2e; margin-bottom:10px; }
+    .meta { font-size:0.88rem; color:#64748b; display:flex; gap:24px; flex-wrap:wrap; margin-top:8px; }
+    .meta span strong { color:#1a1b2e; }
+    .progress-wrap { margin:28px 0; }
+    .progress-wrap label { font-size:0.85rem; font-weight:600; color:#475569; display:block; margin-bottom:8px; }
+    .bar { background:#e2e8f0; border-radius:99px; height:10px; overflow:hidden; }
+    .bar-fill { background:#4f46e5; height:100%; border-radius:99px; }
+    h2 { font-size:1.1rem; font-weight:700; color:#4f46e5; margin:28px 0 10px; border-left:3px solid #4f46e5; padding-left:10px; }
+    p { font-size:0.95rem; color:#334155; margin-bottom:10px; }
+    ul { padding-left:20px; margin-bottom:10px; }
+    li { font-size:0.93rem; color:#334155; margin-bottom:6px; }
+    .checklist li { list-style:none; padding-left:0; }
+    .checklist li::before { content:'☐  '; font-size:1rem; }
+    .footer-note { margin-top:48px; padding-top:16px; border-top:1px solid #e2e8f0; font-size:0.8rem; color:#94a3b8; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="badge">${escH(subject)}</span>
+    <h1>${escH(title)}</h1>
+    <div class="meta">
+      <span><strong>Due:</strong> ${escH(due)}</span>
+      <span><strong>Progress:</strong> ${escH(progress)} complete</span>
+      <span><strong>Generated:</strong> ${new Date().toDateString()}</span>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <label>Completion Progress</label>
+    <div class="bar"><div class="bar-fill" style="width:${escH(progress)};"></div></div>
+  </div>
+
+  <h2>Topic Overview</h2>
+  <p>${escH(content)}</p>
+
+  <h2>Study Notes</h2>
+  <p>Use this section to write your own notes as you study this topic. Focus on definitions, formulas, and examples that you find difficult.</p>
+  <ul>
+    <li>Define the core concept in your own words.</li>
+    <li>Write out any formulas or rules from memory.</li>
+    <li>List at least two real-world examples of this topic.</li>
+    <li>Note any parts you are still unsure about.</li>
+  </ul>
+
+  <h2>Practice Questions</h2>
+  <ul>
+    <li>Q1: Explain the main concept of ${escH(title.split(':')[0])} in your own words.</li>
+    <li>Q2: Work through one past paper question on this topic without notes.</li>
+    <li>Q3: What is the most common exam mistake students make on this topic?</li>
+  </ul>
+
+  <h2>Revision Checklist</h2>
+  <ul class="checklist">
+    <li>I can explain this topic without looking at my notes</li>
+    <li>I have completed at least one practice question</li>
+    <li>I have reviewed and corrected my mistakes</li>
+    <li>I have added this to my Exam Master study planner</li>
+    <li>I am confident I could answer an exam question on this topic</li>
+  </ul>
+
+  <div class="footer-note">
+    Generated by Exam Master &mdash; exammaster.app &mdash; ${new Date().toDateString()}
+  </div>
+</body>
+</html>`;
+    }
+
+    function escH(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function triggerDownload(html, filename) {
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    /* ===== ADD MATERIAL ===== */
+    let newMaterialData = null;
+
+    function addMaterial() {
+      const subject = document.getElementById('new-subject').value.trim();
+      const topic   = document.getElementById('new-topic').value.trim();
+      const content = document.getElementById('new-content').value.trim();
+      const due     = document.getElementById('new-due').value;
+
+      if (!subject || !topic) { alert('Please fill in subject and topic.'); return; }
+
+      newMaterialData = {
+        title: subject + ': ' + topic,
+        subject,
+        due: due ? new Date(due).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'TBC',
+        content: content || 'General study material for ' + subject + '.'
+      };
+
+      /* Add card dynamically */
+      const grid = document.querySelectorAll('.materials-grid')[1];
+      const card = document.createElement('div');
+      card.className = 'material-card';
+      card.innerHTML = `
+        <span class="mat-badge future-badge">Upcoming</span>
+        <h4>${escH(newMaterialData.title)}</h4>
+        <p>Due: ${escH(newMaterialData.due)}</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+        <small>Not started</small>
+        <div class="card-actions">
+          <button class="btn-secondary" style="font-size:0.8rem;padding:7px 15px;">Start Now</button>
+          <button class="btn-pdf" onclick="downloadMaterialPDF('${escH(newMaterialData.title)}','${escH(newMaterialData.subject)}','${escH(newMaterialData.due)}','0%','${escH(newMaterialData.content)}')">PDF</button>
+        </div>`;
+      grid.appendChild(card);
+
+      document.getElementById('new-subject').value = '';
+      document.getElementById('new-topic').value   = '';
+      document.getElementById('new-content').value = '';
+      document.getElementById('new-due').value     = '';
+      document.getElementById('new-pdf-btn').style.display = 'inline-flex';
+    }
+
+    function downloadNewMaterialPDF() {
+      if (!newMaterialData) return;
+      downloadMaterialPDF(newMaterialData.title, newMaterialData.subject, newMaterialData.due, '0%', newMaterialData.content);
+    }
+
+  </script>
+</body>
+</html>
