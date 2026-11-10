@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - AI Study Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="theme.js" defer></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Exam<span>Master</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="tools.html" class="active">Tools</a></li>
+      <li><a href="materials.html">Materials</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="science.html">Science</a></li>
+      <li><a href="feedback.html">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> Day Streak</div>
+      <select id="lang-selector" onchange="changeLanguage(this.value)">
+        <option value="en">English</option><option value="es">Espanol</option>
+        <option value="fr">Francais</option><option value="de">Deutsch</option>
+        <option value="pt">Portugues</option><option value="zh">Chinese</option>
+        <option value="ar">Arabic</option><option value="sw">Swahili</option>
+      </select>
+      <button class="voice-btn" onclick="openVoiceModal()">Voice Assistant</button>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
+    </div>
+  </nav>
+
+  <div class="voice-modal-overlay" id="voice-modal-overlay">
+    <div class="voice-modal">
+      <h2>Voice Assistant</h2>
+      <p class="vm-sub">Navigate Exam Master with your voice</p>
+      <button class="voice-orb" id="voice-orb" onclick="startListening()">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 19.93V22h2v-1.07A8 8 0 0 0 20 13h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.93z"/></svg>
+      </button>
+      <div class="voice-status" id="voice-status">Click the button to speak</div>
+      <div class="voice-output" id="voice-output"></div>
+      <div class="vm-commands">
+        <span class="vm-cmd" onclick="runQuickCommand('go home')">Home</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open tools')">All Tools</span>
+      </div>
+      <button class="voice-close" onclick="closeVoiceModal()">Close</button>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <h1>AI Study Assistant</h1>
+    <p>Paste your homework or essay prompt and get step-by-step guidance</p>
+  </div>
+
+  <div class="tool-page">
+    <div class="panel">
+      <div class="form-group">
+        <label>Your Subject</label>
+        <select id="ai-subject">
+          <option value="">Select subject</option>
+          <option>Mathematics</option><option>Science</option><option>English</option>
+          <option>History</option><option>Geography</option><option>Chemistry</option>
+          <option>Biology</option><option>Physics</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Paste Your Question or Topic</label>
+        <textarea id="ai-input" placeholder="e.g. How do I solve quadratic equations? or Explain the causes of World War I"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Explanation Level</label>
+        <select id="ai-level">
+          <option value="simple">Simple (Beginner)</option>
+          <option value="medium" selected>Medium (Grade level)</option>
+          <option value="advanced">Advanced (Exam prep)</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="getHelp()">Get Guidance</button>
+    </div>
+    <div class="output-box" id="ai-output" style="display:none;"></div>
+  </div>
+
+  <footer class="footer"><p>Exam Master 2026 &mdash; Built for students who refuse to give up.</p></footer>
+
+  <script src="i18n.js"></script>
+  <script src="streak.js"></script>
+  <script src="voice.js"></script>
+  <script>
+    const responses = {
+      math: ["Step 1: Read the problem carefully and identify what you are solving for.\nStep 2: Write down the formula or rule that applies.\nStep 3: Substitute the values into the formula.\nStep 4: Solve step by step, showing your working.\nStep 5: Check your answer makes sense.","For quadratic equations (ax\u00b2 + bx + c = 0), use the quadratic formula: x = (-b \u00b1 \u221a(b\u00b2 - 4ac)) / 2a. Identify a, b, and c first, then substitute."],
+      science: ["Step 1: Identify the concept being asked about.\nStep 2: Recall the key definitions and laws related to it.\nStep 3: Apply the concept to the question using examples.\nStep 4: Structure your answer: definition, explanation, example."],
+      english: ["Step 1: Identify the type of question (analysis, creative, argumentative).\nStep 2: Plan your structure: introduction, body paragraphs, conclusion.\nStep 3: Use the PEEL method: Point, Evidence, Explanation, Link.\nStep 4: Proofread for grammar and spelling."],
+      default: ["Step 1: Break the topic into smaller parts.\nStep 2: Look for the main idea or concept being tested.\nStep 3: Use examples to understand the concept better.\nStep 4: Write a clear explanation in your own words.\nStep 5: Review and check your work."]
+    };
+    function getHelp() {
+      const subject = document.getElementById('ai-subject').value.toLowerCase();
+      const input = document.getElementById('ai-input').value.trim();
+      const level = document.getElementById('ai-level').value;
+      const output = document.getElementById('ai-output');
+      if (!input) { alert('Please enter your question or topic.'); return; }
+      let key = 'default';
+      if (subject.includes('math')) key = 'math';
+      else if (['science','biology','chemistry','physics'].some(s => subject.includes(s))) key = 'science';
+      else if (subject.includes('english')) key = 'english';
+      const pool = responses[key];
+      const answer = pool[Math.floor(Math.random() * pool.length)];
+      let levelNote = level === 'simple' ? 'Simple explanation: ' : level === 'advanced' ? 'Advanced breakdown: ' : '';
+      output.style.display = 'block';
+      output.innerHTML = '<strong>Your question:</strong> ' + input.replace(/</g,'&lt;') + '<br><br><strong>' + levelNote + 'Guidance:</strong><br><br>' + answer.replace(/\n/g,'<br>');
+    }
+  </script>
+</body>
+</html>
