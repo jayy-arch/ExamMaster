@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - PDF Resources</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="theme.js" defer></script>
+  <style>
+    .resource-filters { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:32px; justify-content:center; }
+    .filter-btn { padding:7px 18px; border-radius:20px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text-secondary); font-size:0.85rem; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.15s; }
+    .filter-btn:hover, .filter-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+    .resource-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+    .resource-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:22px; box-shadow:var(--shadow-sm); transition:transform 0.18s, box-shadow 0.18s; }
+    .resource-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-hover); }
+    .resource-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:800; letter-spacing:0.5px; margin-bottom:14px; }
+    .pdf-icon { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
+    .resource-card h3 { font-size:0.98rem; font-weight:700; color:var(--text); margin-bottom:6px; }
+    .resource-card p  { font-size:0.83rem; color:var(--text-secondary); line-height:1.55; margin-bottom:16px; }
+    .resource-meta { display:flex; align-items:center; justify-content:space-between; }
+    .resource-tag { background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-border); padding:3px 10px; border-radius:20px; font-size:0.74rem; font-weight:600; }
+    .btn-download { background:var(--accent); color:#fff; border:none; padding:7px 16px; border-radius:var(--radius-sm); font-size:0.8rem; font-weight:700; cursor:pointer; font-family:inherit; transition:background 0.15s; }
+    .btn-download:hover { background:var(--accent-hover); }
+
+    .upload-area { border:2px dashed var(--border-strong); border-radius:var(--radius-lg); padding:40px; text-align:center; cursor:pointer; transition:border-color 0.2s, background 0.2s; }
+    .upload-area:hover { border-color:var(--accent); background:var(--accent-soft); }
+    .upload-area h3 { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:8px; }
+    .upload-area p  { font-size:0.875rem; color:var(--text-secondary); margin-bottom:16px; }
+    .upload-icon { font-size:2rem; margin-bottom:12px; color:var(--accent); font-weight:800; }
+
+    .pdf-viewer { display:none; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; margin-top:24px; }
+    .pdf-viewer h3 { font-size:1rem; font-weight:700; margin-bottom:16px; color:var(--text); }
+    #pdf-frame { width:100%; height:600px; border:none; border-radius:var(--radius); }
+    .viewer-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Exam<span>Master</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="tools.html">Tools</a></li>
+      <li><a href="materials.html">Materials</a></li>
+      <li><a href="resources.html" class="active">Resources</a></li>
+      <li><a href="science.html">Science</a></li>
+      <li><a href="feedback.html">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> Day Streak</div>
+      <button class="voice-btn" onclick="openVoiceModal()">Voice</button>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
+    </div>
+  </nav>
+
+  <div class="voice-modal-overlay" id="voice-modal-overlay">
+    <div class="voice-modal">
+      <h2>Voice Assistant</h2>
+      <p class="vm-sub">Navigate Exam Master with your voice</p>
+      <button class="voice-orb" id="voice-orb" onclick="startListening()">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 19.93V22h2v-1.07A8 8 0 0 0 20 13h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.93z"/></svg>
+      </button>
+      <div class="voice-status" id="voice-status">Click the button to speak</div>
+      <div class="voice-output" id="voice-output"></div>
+      <div class="vm-commands">
+        <span class="vm-cmd" onclick="runQuickCommand('go home')">Home</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open timetable')">Timetable</span>
+      </div>
+      <button class="voice-close" onclick="closeVoiceModal()">Close</button>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <h1>PDF Resources</h1>
+    <p>Download study guides, past papers, and revision sheets — or upload your own</p>
+  </div>
+
+  <section class="section">
+
+    <!-- UPLOAD YOUR OWN -->
+    <div class="panel" style="margin-bottom:40px;">
+      <h3>Upload a PDF</h3>
+      <div class="upload-area" onclick="document.getElementById('pdf-upload').click()">
+        <div class="upload-icon">PDF</div>
+        <h3>Click to upload a PDF file</h3>
+        <p>Supports PDF files up to 20MB. Your file will be available for quick viewing.</p>
+        <button class="btn-primary" style="pointer-events:none;">Choose File</button>
+      </div>
+      <input type="file" id="pdf-upload" accept=".pdf" style="display:none;" onchange="previewPDF(this)" />
+
+      <div class="pdf-viewer" id="pdf-viewer">
+        <div class="viewer-bar">
+          <h3 id="pdf-title">Viewing PDF</h3>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-primary" id="btn-dl" style="font-size:0.82rem;padding:7px 16px;" onclick="downloadCurrentPDF()">Download</button>
+            <button class="btn-secondary" style="font-size:0.82rem;padding:7px 14px;" onclick="closePDFViewer()">Close</button>
+          </div>
+        </div>
+        <iframe id="pdf-frame" title="PDF Viewer"></iframe>
+      </div>
+    </div>
+
+    <!-- FILTER -->
+    <h2 class="section-title" style="margin-bottom:12px;">Study Library</h2>
+    <p class="section-sub">Curated resources across all major subjects</p>
+
+    <div class="resource-filters">
+      <button class="filter-btn active" onclick="filterResources('all', this)">All</button>
+      <button class="filter-btn" onclick="filterResources('mathematics', this)">Mathematics</button>
+      <button class="filter-btn" onclick="filterResources('science', this)">Science</button>
+      <button class="filter-btn" onclick="filterResources('english', this)">English</button>
+      <button class="filter-btn" onclick="filterResources('history', this)">History</button>
+      <button class="filter-btn" onclick="filterResources('chemistry', this)">Chemistry</button>
+      <button class="filter-btn" onclick="filterResources('biology', this)">Biology</button>
+      <button class="filter-btn" onclick="filterResources('physics', this)">Physics</button>
+    </div>
+
+    <div class="resource-grid" id="resource-grid"></div>
+
+  </section>
+
+  <footer class="footer">
+    <p>Exam Master 2026 &mdash; Built for students who refuse to give up.</p>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="streak.js"></script>
+  <script src="voice.js"></script>
+  <script>
+    const resources = [
+      { title:'Algebra Fundamentals Guide', subject:'mathematics', desc:'Covers linear equations, quadratics, and factorisation with worked examples.', pages:'24 pages' },
+      { title:'Trigonometry Reference Sheet', subject:'mathematics', desc:'All key trig identities, unit circle, and sin/cos/tan rules at a glance.', pages:'4 pages' },
+      { title:'Statistics and Probability Notes', subject:'mathematics', desc:'Mean, median, mode, standard deviation, and probability trees explained.', pages:'18 pages' },
+      { title:'Cell Biology Study Guide', subject:'biology', desc:'Detailed notes on cell structure, mitosis, meiosis, and DNA replication.', pages:'30 pages' },
+      { title:'Ecosystems and Food Chains', subject:'biology', desc:'Energy flow, trophic levels, and ecosystem interactions summarised.', pages:'16 pages' },
+      { title:'Periodic Table and Elements', subject:'chemistry', desc:'Element properties, groups, periods, and key reactions.', pages:'12 pages' },
+      { title:'Chemical Bonding Explained', subject:'chemistry', desc:'Ionic, covalent, and metallic bonding with diagrams and examples.', pages:'20 pages' },
+      { title:'Forces and Motion Cheatsheet', subject:'physics', desc:'Newtons laws, velocity, acceleration, and momentum formulas.', pages:'6 pages' },
+      { title:'Electricity and Circuits Guide', subject:'physics', desc:'Ohms law, series and parallel circuits, power calculations.', pages:'22 pages' },
+      { title:'Essay Writing Masterclass', subject:'english', desc:'Structure, argumentation, evidence use, and style for top marks.', pages:'14 pages' },
+      { title:'Literary Devices Reference', subject:'english', desc:'50 literary devices with definitions and examples from classic texts.', pages:'10 pages' },
+      { title:'World War I and II Summary', subject:'history', desc:'Causes, key events, turning points, and consequences of both wars.', pages:'28 pages' },
+      { title:'Cold War Timeline Notes', subject:'history', desc:'Key events from 1947 to 1991, with political context.', pages:'16 pages' },
+      { title:'Science Exam Revision Pack', subject:'science', desc:'Combined revision sheet covering biology, chemistry, and physics basics.', pages:'36 pages' },
+    ];
+
+    let currentPDFURL = null;
+
+    function renderResources(filter) {
+      const grid = document.getElementById('resource-grid');
+      const filtered = filter === 'all' ? resources : resources.filter(r => r.subject === filter);
+      grid.innerHTML = filtered.map((r, i) => `
+        <div class="resource-card">
+          <div class="resource-icon pdf-icon">PDF</div>
+          <h3>${r.title}</h3>
+          <p>${r.desc}</p>
+          <div class="resource-meta">
+            <span class="resource-tag">${r.subject.charAt(0).toUpperCase() + r.subject.slice(1)} &middot; ${r.pages}</span>
+            <button class="btn-download" onclick="generatePDF('${r.title}', '${r.subject}', \`${r.desc}\`, '${r.pages}')">Download PDF</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterResources(subject, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderResources(subject);
+    }
+
+    renderResources('all');
+
+    /* Generate a simple downloadable PDF via data URI (plain text formatted) */
+    function generatePDF(title, subject, desc, pages) {
+      /* Build a styled HTML page and trigger print-to-PDF */
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+      <style>body{font-family:Georgia,serif;max-width:700px;margin:60px auto;color:#1a1a2e;line-height:1.8;}
+      h1{font-size:2rem;border-bottom:3px solid #4f46e5;padding-bottom:12px;margin-bottom:24px;}
+      .meta{font-size:0.9rem;color:#666;margin-bottom:32px;}
+      .section{margin-bottom:28px;}h2{font-size:1.3rem;color:#4f46e5;margin-bottom:10px;}
+      p{font-size:1rem;color:#333;}</style></head><body>
+      <h1>${title}</h1>
+      <div class="meta">Subject: ${subject.charAt(0).toUpperCase()+subject.slice(1)} &nbsp;|&nbsp; ${pages} &nbsp;|&nbsp; Exam Master 2026</div>
+      <div class="section"><h2>Overview</h2><p>${desc}</p></div>
+      <div class="section"><h2>Key Points</h2>
+      <p>1. This document provides structured revision material for ${subject} students.</p>
+      <p>2. Work through each section carefully and take notes on topics you find difficult.</p>
+      <p>3. Use the Exam Master Study Planner to schedule time for each section.</p>
+      <p>4. After reading, test yourself using the Smart Note Summarizer flashcard tool.</p></div>
+      <div class="section"><h2>Practice Questions</h2>
+      <p>Q1: Define the core concept covered in this guide in your own words.</p>
+      <p>Q2: List three real-world applications of this topic.</p>
+      <p>Q3: What is the most common mistake students make on this topic in exams?</p></div>
+      <div class="section"><h2>Revision Checklist</h2>
+      <p>&#9744; I can explain this topic without notes</p>
+      <p>&#9744; I have done at least one past paper question on this topic</p>
+      <p>&#9744; I have reviewed my mistakes</p></div>
+      </body></html>`;
+
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = title.replace(/\s+/g, '_') + '.html';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    /* Preview uploaded PDF */
+    function previewPDF(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      if (file.type !== 'application/pdf') { alert('Please upload a PDF file.'); return; }
+      const url = URL.createObjectURL(file);
+      currentPDFURL = url;
+      document.getElementById('pdf-frame').src = url;
+      document.getElementById('pdf-title').textContent = 'Viewing: ' + file.name;
+      document.getElementById('pdf-viewer').style.display = 'block';
+      document.getElementById('pdf-viewer').scrollIntoView({ behavior: 'smooth' });
+      /* store filename for download */
+      document.getElementById('btn-dl').setAttribute('data-name', file.name);
+    }
+
+    function downloadCurrentPDF() {
+      if (!currentPDFURL) return;
+      const name = document.getElementById('btn-dl').getAttribute('data-name') || 'document.pdf';
+      const a = document.createElement('a');
+      a.href = currentPDFURL;
+      a.download = name;
+      a.click();
+    }
+
+    function closePDFViewer() {
+      document.getElementById('pdf-viewer').style.display = 'none';
+      document.getElementById('pdf-frame').src = '';
+      if (currentPDFURL) { URL.revokeObjectURL(currentPDFURL); currentPDFURL = null; }
+    }
+  </script>
+</body>
+</html>
