@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - Science Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <script>(function(){var t=localStorage.getItem('sb_theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+  <style>
+    /* ===== TABS ===== */
+    .tab-bar { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:32px; }
+    .tab-btn {
+      padding:11px 28px; font-size:0.9rem; font-weight:700; border:none;
+      background:none; color:var(--text-secondary); cursor:pointer;
+      border-bottom:3px solid transparent; margin-bottom:-2px;
+      font-family:inherit; transition:color 0.15s, border-color 0.15s;
+    }
+    .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+    .tab-btn:hover:not(.active) { color:var(--text); }
+
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    /* ===== PERIODIC TABLE ===== */
+    .pt-controls {
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px;
+    }
+    .pt-search {
+      flex:1; min-width:200px; max-width:320px;
+      padding:9px 14px; border:1.5px solid var(--border); border-radius:var(--radius);
+      font-size:0.9rem; color:var(--text); background:var(--surface); font-family:inherit;
+    }
+    .pt-search:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,70,229,0.12); }
+
+    .pt-legend { display:flex; flex-wrap:wrap; gap:8px; }
+    .pt-leg-item {
+      display:flex; align-items:center; gap:5px;
+      font-size:0.75rem; font-weight:600; color:var(--text-secondary);
+    }
+    .pt-leg-dot { width:12px; height:12px; border-radius:3px; }
+
+    .pt-scroll { overflow-x:auto; padding-bottom:8px; }
+    .pt-grid {
+      display:grid;
+      grid-template-columns: repeat(18, minmax(52px,1fr));
+      gap:3px;
+      min-width:950px;
+    }
+
+    .el {
+      border-radius:6px; padding:4px 3px; text-align:center;
+      cursor:pointer; transition:transform 0.12s, box-shadow 0.12s;
+      border:1px solid rgba(0,0,0,0.08); position:relative;
+      min-height:56px; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+    }
+    .el:hover { transform:scale(1.12); box-shadow:0 6px 18px rgba(0,0,0,0.18); z-index:10; }
+    .el.dimmed { opacity:0.2; }
+    .el .num { font-size:0.6rem; font-weight:700; opacity:0.8; line-height:1; }
+    .el .sym { font-size:1.05rem; font-weight:800; line-height:1.1; }
+    .el .name { font-size:0.5rem; font-weight:500; opacity:0.85; line-height:1.2; white-space:nowrap; }
+
+    /* category colours */
+    .cat-alkali      { background:#fce7f3; color:#9d174d; }
+    .cat-alkaline    { background:#fef3c7; color:#92400e; }
+    .cat-transition  { background:#dbeafe; color:#1e40af; }
+    .cat-post        { background:#d1fae5; color:#065f46; }
+    .cat-metalloid   { background:#ede9fe; color:#5b21b6; }
+    .cat-nonmetal    { background:#ecfdf5; color:#065f46; }
+    .cat-halogen     { background:#fdf2f8; color:#9d174d; }
+    .cat-noble       { background:#f0f9ff; color:#075985; }
+    .cat-lanthanide  { background:#fff7ed; color:#9a3412; }
+    .cat-actinide    { background:#fef2f2; color:#991b1b; }
+
+    [data-theme="dark"] .cat-alkali      { background:#4c0519; color:#fda4af; }
+    [data-theme="dark"] .cat-alkaline    { background:#1c1200; color:#fcd34d; }
+    [data-theme="dark"] .cat-transition  { background:#1e1b4b; color:#a5b4fc; }
+    [data-theme="dark"] .cat-post        { background:#052e16; color:#86efac; }
+    [data-theme="dark"] .cat-metalloid   { background:#2e1065; color:#c4b5fd; }
+    [data-theme="dark"] .cat-nonmetal    { background:#042f2e; color:#5eead4; }
+    [data-theme="dark"] .cat-halogen     { background:#3b0764; color:#e9d5ff; }
+    [data-theme="dark"] .cat-noble       { background:#0c1a2e; color:#93c5fd; }
+    [data-theme="dark"] .cat-lanthanide  { background:#431407; color:#fdba74; }
+    [data-theme="dark"] .cat-actinide    { background:#450a0a; color:#fca5a5; }
+
+    /* Element detail card */
+    .el-detail {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.55); z-index:800;
+      align-items:center; justify-content:center;
+      backdrop-filter:blur(4px);
+    }
+    .el-detail.open { display:flex; }
+    .el-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:20px; padding:36px 32px; width:420px; max-width:94vw;
+      box-shadow:0 24px 64px rgba(0,0,0,0.3);
+      animation:popIn 0.17s ease;
+    }
+    @keyframes popIn { from{transform:scale(0.92);opacity:0} to{transform:scale(1);opacity:1} }
+    .el-card-header { display:flex; align-items:center; gap:20px; margin-bottom:24px; }
+    .el-big-sym {
+      width:72px; height:72px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:2rem; font-weight:900; flex-shrink:0;
+    }
+    .el-card-header h2 { font-size:1.4rem; font-weight:800; color:var(--text); margin-bottom:3px; }
+    .el-card-header p  { font-size:0.85rem; color:var(--text-secondary); }
+    .el-props { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:22px; }
+    .el-prop { background:var(--bg-alt); border-radius:8px; padding:10px 12px; }
+    .el-prop-label { font-size:0.72rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
+    .el-prop-val   { font-size:0.95rem; font-weight:700; color:var(--text); }
+    .el-desc { font-size:0.875rem; color:var(--text-secondary); line-height:1.65; margin-bottom:20px; }
+    .el-close { width:100%; }
+
+    /* ===== CALCULATOR ===== */
+    .calc-wrap {
+      display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start;
+      justify-content:center;
+    }
+
+    .calc-box {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:20px; padding:24px; width:360px; max-width:100%;
+      box-shadow:var(--shadow-md);
+    }
+
+    .calc-screen {
+      background:#0f172a; border-radius:12px; padding:16px 18px;
+      margin-bottom:16px; min-height:80px;
+      display:flex; flex-direction:column; align-items:flex-end; justify-content:flex-end;
+    }
+    .calc-expr { font-size:0.78rem; color:#64748b; min-height:18px; word-break:break-all; }
+    .calc-display {
+      font-size:2.2rem; font-weight:700; color:#fff;
+      word-break:break-all; text-align:right; line-height:1.2;
+    }
+
+    .calc-mode {
+      display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;
+    }
+    .mode-btn {
+      flex:1; padding:7px 10px; font-size:0.76rem; font-weight:700;
+      border:1px solid var(--border); border-radius:6px; background:var(--bg-alt);
+      color:var(--text-secondary); cursor:pointer; font-family:inherit;
+      transition:background 0.12s, color 0.12s;
+    }
+    .mode-btn.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+    .calc-grid {
+      display:grid; grid-template-columns:repeat(5,1fr); gap:7px;
+    }
+
+    .cb {
+      padding:0; height:50px; border-radius:9px; border:none;
+      font-size:0.85rem; font-weight:700; cursor:pointer;
+      font-family:inherit; transition:transform 0.1s, filter 0.1s;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .cb:hover  { filter:brightness(1.1); }
+    .cb:active { transform:scale(0.93); }
+    .cb.num  { background:var(--surface-2,#f8fafc); color:var(--text); border:1px solid var(--border); }
+    .cb.op   { background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; }
+    .cb.fn   { background:var(--bg-alt); color:var(--text); border:1px solid var(--border); font-size:0.78rem; }
+    .cb.eq   { background:var(--accent); color:#fff; border:none; font-size:1.1rem; }
+    .cb.clr  { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
+    .cb.span2 { grid-column:span 2; }
+
+    [data-theme="dark"] .cb.num { background:#1e293b; border-color:#334155; }
+    [data-theme="dark"] .cb.op  { background:#1e1b4b; color:#a5b4fc; border-color:#3730a3; }
+    [data-theme="dark"] .cb.fn  { background:#1e293b; border-color:#334155; }
+    [data-theme="dark"] .cb.clr { background:#2d0a0a; color:#f87171; border-color:#7f1d1d; }
+
+    /* Physics formulas reference */
+    .formula-box {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:20px; padding:24px; flex:1; min-width:280px;
+      max-width:380px; box-shadow:var(--shadow);
+    }
+    .formula-box h3 { font-size:1rem; font-weight:800; color:var(--text); margin-bottom:16px; }
+    .formula-list { display:flex; flex-direction:column; gap:8px; }
+    .formula-item {
+      background:var(--bg-alt); border-radius:8px; padding:10px 14px;
+      border-left:3px solid var(--accent);
+    }
+    .formula-item .fl { font-size:0.72rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:3px; }
+    .formula-item .fv { font-size:0.9rem; font-weight:700; color:var(--text); font-family:monospace; }
+
+    .const-list { display:flex; flex-direction:column; gap:7px; margin-top:14px; }
+    .const-item {
+      display:flex; align-items:center; justify-content:space-between;
+      background:var(--bg-alt); border-radius:8px; padding:9px 13px;
+    }
+    .const-item .cl { font-size:0.82rem; font-weight:600; color:var(--text); }
+    .const-item .cv { font-size:0.78rem; color:var(--accent); font-family:monospace; font-weight:700; }
+    .btn-use {
+      font-size:0.7rem; font-weight:700; padding:3px 9px; border-radius:5px;
+      background:var(--accent); color:#fff; border:none; cursor:pointer;
+      font-family:inherit; margin-left:8px; white-space:nowrap;
+      transition:background 0.12s;
+    }
+    .btn-use:hover { background:var(--accent-hover,#4338ca); }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">Exam<span>Master</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="tools.html">Tools</a></li>
+      <li><a href="materials.html">Materials</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="science.html" class="active">Science</a></li>
+      <li><a href="feedback.html">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> Day Streak</div>
+      <button class="voice-btn" onclick="openVoiceModal()">Voice</button>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
+    </div>
+  </nav>
+
+  <!-- VOICE MODAL -->
+  <div class="voice-modal-overlay" id="voice-modal-overlay">
+    <div class="voice-modal">
+      <h2>Voice Assistant</h2>
+      <p class="vm-sub">Navigate Exam Master with your voice</p>
+      <button class="voice-orb" id="voice-orb" onclick="startListening()">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 19.93V22h2v-1.07A8 8 0 0 0 20 13h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.93z"/></svg>
+      </button>
+      <div class="voice-status" id="voice-status">Click the button to speak</div>
+      <div class="voice-output" id="voice-output"></div>
+      <div class="vm-commands">
+        <span class="vm-cmd" onclick="runQuickCommand('go home')">Home</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open tools')">Tools</span>
+      </div>
+      <button class="voice-close" onclick="closeVoiceModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- ELEMENT DETAIL MODAL -->
+  <div class="el-detail" id="el-detail">
+    <div class="el-card">
+      <div class="el-card-header">
+        <div class="el-big-sym" id="el-big-sym"></div>
+        <div>
+          <h2 id="el-name"></h2>
+          <p id="el-category"></p>
+        </div>
+      </div>
+      <div class="el-props" id="el-props"></div>
+      <p class="el-desc" id="el-desc"></p>
+      <button class="btn-primary el-close" onclick="closeEl()">Close</button>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <h1>Science Tools</h1>
+    <p>Periodic table and scientific calculator for Physics and Chemistry students</p>
+  </div>
+
+  <section class="section">
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('periodic',this)">Periodic Table</button>
+      <button class="tab-btn"       onclick="switchTab('calculator',this)">Scientific Calculator</button>
+    </div>
+
+    <!-- ===== PERIODIC TABLE TAB ===== -->
+    <div class="tab-panel active" id="tab-periodic">
+      <div class="pt-controls">
+        <input type="text" class="pt-search" id="pt-search" placeholder="Search element, symbol or atomic number..." oninput="searchEl(this.value)"/>
+        <div class="pt-legend" id="pt-legend"></div>
+      </div>
+      <div class="pt-scroll">
+        <div class="pt-grid" id="pt-grid"></div>
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:12px;">Click any element for detailed information.</p>
+    </div>
+
+    <!-- ===== CALCULATOR TAB ===== -->
+    <div class="tab-panel" id="tab-calculator">
+      <div class="calc-wrap">
+
+        <!-- CALCULATOR -->
+        <div class="calc-box">
+          <div class="calc-screen">
+            <div class="calc-expr" id="calc-expr"></div>
+            <div class="calc-display" id="calc-display">0</div>
+          </div>
+          <div class="calc-mode">
+            <button class="mode-btn on" id="mode-deg" onclick="setMode('deg')">DEG</button>
+            <button class="mode-btn"    id="mode-rad" onclick="setMode('rad')">RAD</button>
+          </div>
+          <div class="calc-grid" id="calc-grid"></div>
+        </div>
+
+        <!-- PHYSICS REFERENCE -->
+        <div class="formula-box">
+          <h3>Physics Formulas</h3>
+          <div class="formula-list">
+            <div class="formula-item"><div class="fl">Force</div><div class="fv">F = m × a</div></div>
+            <div class="formula-item"><div class="fl">Kinetic Energy</div><div class="fv">KE = ½mv²</div></div>
+            <div class="formula-item"><div class="fl">Potential Energy</div><div class="fv">PE = mgh</div></div>
+            <div class="formula-item"><div class="fl">Work Done</div><div class="fv">W = F × d</div></div>
+            <div class="formula-item"><div class="fl">Power</div><div class="fv">P = W / t</div></div>
+            <div class="formula-item"><div class="fl">Ohm's Law</div><div class="fv">V = I × R</div></div>
+            <div class="formula-item"><div class="fl">Wave Speed</div><div class="fv">v = f × λ</div></div>
+            <div class="formula-item"><div class="fl">Pressure</div><div class="fv">P = F / A</div></div>
+            <div class="formula-item"><div class="fl">Density</div><div class="fv">ρ = m / V</div></div>
+            <div class="formula-item"><div class="fl">Velocity</div><div class="fv">v = u + at</div></div>
+          </div>
+          <h3 style="margin-top:20px;">Constants</h3>
+          <div class="const-list">
+            <div class="const-item"><span class="cl">Speed of light</span><span style="display:flex;align-items:center;"><span class="cv">3×10⁸ m/s</span><button class="btn-use" onclick="insertConst('3e8')">Use</button></span></div>
+            <div class="const-item"><span class="cl">Gravity (g)</span><span style="display:flex;align-items:center;"><span class="cv">9.81 m/s²</span><button class="btn-use" onclick="insertConst('9.81')">Use</button></span></div>
+            <div class="const-item"><span class="cl">Planck (h)</span><span style="display:flex;align-items:center;"><span class="cv">6.626×10⁻³⁴</span><button class="btn-use" onclick="insertConst('6.626e-34')">Use</button></span></div>
+            <div class="const-item"><span class="cl">Avogadro</span><span style="display:flex;align-items:center;"><span class="cv">6.022×10²³</span><button class="btn-use" onclick="insertConst('6.022e23')">Use</button></span></div>
+            <div class="const-item"><span class="cl">Electron charge</span><span style="display:flex;align-items:center;"><span class="cv">1.602×10⁻¹⁹ C</span><button class="btn-use" onclick="insertConst('1.602e-19')">Use</button></span></div>
+            <div class="const-item"><span class="cl">Boltzmann (k)</span><span style="display:flex;align-items:center;"><span class="cv">1.381×10⁻²³</span><button class="btn-use" onclick="insertConst('1.381e-23')">Use</button></span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>Exam Master 2026 &mdash; Built for students who refuse to give up.</p>
+  </footer>
+
+  <script src="streak.js"></script>
+  <script src="voice.js"></script>
+  <script>
+    /* ===== THEME ===== */
+    function toggleTheme(){
+      var cur=document.documentElement.getAttribute('data-theme')||'light';
+      var next=cur==='dark'?'light':'dark';
+      document.documentElement.setAttribute('data-theme',next);
+      localStorage.setItem('sb_theme',next);
+      document.getElementById('theme-btn').textContent=next==='dark'?'Light Mode':'Dark Mode';
+    }
+    document.addEventListener('DOMContentLoaded',function(){
+      var s=localStorage.getItem('sb_theme')||'light';
+      document.getElementById('theme-btn').textContent=s==='dark'?'Light Mode':'Dark Mode';
+    });
+
+    /* ===== TABS ===== */
+    function switchTab(id,btn){
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.getElementById('tab-'+id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    /* ============================================================
+       PERIODIC TABLE
+    ============================================================ */
+    const CATEGORIES = {
+      'alkali':     {label:'Alkali Metal',     cls:'cat-alkali'},
+      'alkaline':   {label:'Alkaline Earth',   cls:'cat-alkaline'},
+      'transition': {label:'Transition Metal', cls:'cat-transition'},
+      'post':       {label:'Post-Transition',  cls:'cat-post'},
+      'metalloid':  {label:'Metalloid',        cls:'cat-metalloid'},
+      'nonmetal':   {label:'Non-metal',        cls:'cat-nonmetal'},
+      'halogen':    {label:'Halogen',          cls:'cat-halogen'},
+      'noble':      {label:'Noble Gas',        cls:'cat-noble'},
+      'lanthanide': {label:'Lanthanide',       cls:'cat-lanthanide'},
+      'actinide':   {label:'Actinide',         cls:'cat-actinide'},
+    };
+
+    /* Elements data: [symbol, name, atomicNum, mass, category, group, period, desc] */
+    const ELEMENTS = [
+      ['H','Hydrogen',1,1.008,'nonmetal',1,1,'The lightest and most abundant element in the universe. Makes up ~75% of all baryonic mass.'],
+      ['He','Helium',2,4.003,'noble',18,1,'Second lightest element. Used in balloons and as a coolant for MRI machines.'],
+      ['Li','Lithium',3,6.941,'alkali',1,2,'Lightest metal. Used in rechargeable batteries and mood-stabilising medication.'],
+      ['Be','Beryllium',4,9.012,'alkaline',2,2,'Very stiff and lightweight metal. Used in aerospace and X-ray equipment.'],
+      ['B','Boron',5,10.811,'metalloid',13,2,'Used in fiberglass, ceramics, and as a neutron absorber in nuclear reactors.'],
+      ['C','Carbon',6,12.011,'nonmetal',14,2,'Basis of all organic life. Forms diamond, graphite, graphene and fullerenes.'],
+      ['N','Nitrogen',7,14.007,'nonmetal',15,2,'Makes up 78% of Earths atmosphere. Essential for amino acids and DNA.'],
+      ['O','Oxygen',8,15.999,'nonmetal',16,2,'Essential for respiration. Makes up 21% of Earths atmosphere.'],
+      ['F','Fluorine',9,18.998,'halogen',17,2,'Most electronegative element. Used in toothpaste and Teflon coatings.'],
+      ['Ne','Neon',10,20.180,'noble',18,2,'Inert noble gas. Famous for its use in bright red-orange neon signs.'],
+      ['Na','Sodium',11,22.990,'alkali',1,3,'Highly reactive metal. Essential electrolyte in human biology.'],
+      ['Mg','Magnesium',12,24.305,'alkaline',2,3,'Lightweight structural metal. Essential for chlorophyll in plants.'],
+      ['Al','Aluminium',13,26.982,'post',13,3,'Most abundant metal in Earths crust. Lightweight and corrosion-resistant.'],
+      ['Si','Silicon',14,28.086,'metalloid',14,3,'Backbone of modern electronics. Second most abundant element in Earths crust.'],
+      ['P','Phosphorus',15,30.974,'nonmetal',15,3,'Essential for DNA and cell membranes. Used in fertilisers and matches.'],
+      ['S','Sulfur',16,32.065,'nonmetal',16,3,'Yellow solid. Used in gunpowder, rubber vulcanisation and sulfuric acid production.'],
+      ['Cl','Chlorine',17,35.453,'halogen',17,3,'Toxic gas used as a disinfectant and in PVC plastic production.'],
+      ['Ar','Argon',18,39.948,'noble',18,3,'Third most abundant gas in Earths atmosphere. Used in welding and light bulbs.'],
+      ['K','Potassium',19,39.098,'alkali',1,4,'Essential mineral for nerve and muscle function. Very reactive with water.'],
+      ['Ca','Calcium',20,40.078,'alkaline',2,4,'Most abundant mineral in the human body. Essential for bones and teeth.'],
+      ['Sc','Scandium',21,44.956,'transition',3,4,'Rare transition metal. Used in aerospace alloys and sports equipment.'],
+      ['Ti','Titanium',22,47.867,'transition',4,4,'Strong, lightweight and corrosion-resistant. Used in aircraft and medical implants.'],
+      ['V','Vanadium',23,50.942,'transition',5,4,'Used to strengthen steel alloys. Important in some biological enzymes.'],
+      ['Cr','Chromium',24,51.996,'transition',6,4,'Gives stainless steel its corrosion resistance. Used in chrome plating.'],
+      ['Mn','Manganese',25,54.938,'transition',7,4,'Essential for steel production. Important biological trace element.'],
+      ['Fe','Iron',26,55.845,'transition',8,4,'Most used metal in the world. Core component of steel and of blood haemoglobin.'],
+      ['Co','Cobalt',27,58.933,'transition',9,4,'Used in lithium-ion batteries and superalloys for jet engines.'],
+      ['Ni','Nickel',28,58.693,'transition',10,4,'Corrosion-resistant metal. Used in stainless steel, magnets and batteries.'],
+      ['Cu','Copper',29,63.546,'transition',11,4,'Excellent electrical conductor. First metal used by humans. Essential nutrient.'],
+      ['Zn','Zinc',30,65.38,'transition',12,4,'Used to galvanise steel. Essential mineral for immune function.'],
+      ['Ga','Gallium',31,69.723,'post',13,4,'Melts just above room temperature. Used in semiconductors and LEDs.'],
+      ['Ge','Germanium',32,72.630,'metalloid',14,4,'Semiconductor used in transistors. Predicted by Mendeleev before its discovery.'],
+      ['As','Arsenic',33,74.922,'metalloid',15,4,'Toxic metalloid. Historical use as a poison. Now used in semiconductors.'],
+      ['Se','Selenium',34,78.971,'nonmetal',16,4,'Essential trace element for thyroid function. Used in solar cells.'],
+      ['Br','Bromine',35,79.904,'halogen',17,4,'Only liquid non-metal at room temperature. Used in flame retardants.'],
+      ['Kr','Krypton',36,83.798,'noble',18,4,'Inert noble gas. Used in high-power light bulbs and laser technology.'],
+      ['Rb','Rubidium',37,85.468,'alkali',1,5,'Highly reactive alkali metal. Used in atomic clocks and research.'],
+      ['Sr','Strontium',38,87.62,'alkaline',2,5,'Gives red colour to fireworks. Radioactive Sr-90 is a nuclear fission product.'],
+      ['Y','Yttrium',39,88.906,'transition',3,5,'Used in LED displays, lasers and superconductors.'],
+      ['Zr','Zirconium',40,91.224,'transition',4,5,'Corrosion-resistant metal used in nuclear reactor fuel cladding.'],
+      ['Nb','Niobium',41,92.906,'transition',5,5,'Used in superconducting magnets and high-strength steel alloys.'],
+      ['Mo','Molybdenum',42,95.96,'transition',6,5,'High melting point metal. Essential component of stainless steel.'],
+      ['Tc','Technetium',43,98,'transition',7,5,'First artificially produced element. Used in nuclear medicine imaging.'],
+      ['Ru','Ruthenium',44,101.07,'transition',8,5,'Rare platinum group metal. Used in catalysts and electrical contacts.'],
+      ['Rh','Rhodium',45,102.906,'transition',9,5,'Rarest and most valuable precious metal. Used in catalytic converters.'],
+      ['Pd','Palladium',46,106.42,'transition',10,5,'Used in catalytic converters and hydrogen storage. Precious metal.'],
+      ['Ag','Silver',47,107.868,'transition',11,5,'Best electrical conductor of all elements. Used in electronics and photography.'],
+      ['Cd','Cadmium',48,112.411,'transition',12,5,'Used in rechargeable nickel-cadmium batteries. Highly toxic heavy metal.'],
+      ['In','Indium',49,114.818,'post',13,5,'Soft metal used in touchscreens (ITO) and thin-film solar cells.'],
+      ['Sn','Tin',50,118.710,'post',14,5,'Used in solder, tin cans and bronze alloys. One of the first metals smelted.'],
+      ['Sb','Antimony',51,121.760,'metalloid',15,5,'Used in flame retardants and semiconductor production.'],
+      ['Te','Tellurium',52,127.60,'metalloid',16,5,'Brittle metalloid used in solar panels and thermoelectric devices.'],
+      ['I','Iodine',53,126.904,'halogen',17,5,'Essential nutrient for thyroid function. Used as an antiseptic.'],
+      ['Xe','Xenon',54,131.293,'noble',18,5,'Dense noble gas. Used in car headlights, general anaesthesia and ion thrusters.'],
+      ['Cs','Caesium',55,132.905,'alkali',1,6,'Most reactive alkali metal. Used in atomic clocks - defines the SI second.'],
+      ['Ba','Barium',56,137.327,'alkaline',2,6,'Used in barium meals for X-ray imaging of the digestive tract.'],
+      ['La','Lanthanum',57,138.905,'lanthanide',0,6,'Soft rare earth metal. Used in camera lenses and hybrid car batteries.'],
+      ['Ce','Cerium',58,140.116,'lanthanide',0,6,'Most abundant rare earth element. Used in catalytic converters and glass polishing.'],
+      ['Pr','Praseodymium',59,140.908,'lanthanide',0,6,'Used in powerful magnets and goggles for glassblowers.'],
+      ['Nd','Neodymium',60,144.242,'lanthanide',0,6,'Makes the strongest permanent magnets known. Used in electric motors and hard drives.'],
+      ['Pm','Promethium',61,145,'lanthanide',0,6,'Radioactive rare earth. No stable isotopes. Used in nuclear batteries.'],
+      ['Sm','Samarium',62,150.36,'lanthanide',0,6,'Used in samarium-cobalt magnets which work at high temperatures.'],
+      ['Eu','Europium',63,151.964,'lanthanide',0,6,'Used in fluorescent lamps and euro banknote anti-counterfeiting phosphors.'],
+      ['Gd','Gadolinium',64,157.25,'lanthanide',0,6,'Used as an MRI contrast agent and in nuclear reactor control rods.'],
+      ['Tb','Terbium',65,158.925,'lanthanide',0,6,'Used in solid-state devices and as green phosphors in display screens.'],
+      ['Dy','Dysprosium',66,162.500,'lanthanide',0,6,'Used in neodymium magnets and nuclear reactor control rods.'],
+      ['Ho','Holmium',67,164.930,'lanthanide',0,6,'Has the highest magnetic moment of any element. Used in lasers.'],
+      ['Er','Erbium',68,167.259,'lanthanide',0,6,'Used in fibre-optic amplifiers and medical lasers.'],
+      ['Tm','Thulium',69,168.934,'lanthanide',0,6,'Rarest naturally occurring lanthanide. Used in portable X-ray devices.'],
+      ['Yb','Ytterbium',70,173.045,'lanthanide',0,6,'Used in atomic clocks, lasers and stress gauges.'],
+      ['Lu','Lutetium',71,174.967,'lanthanide',0,6,'Densest and hardest lanthanide. Used in PET scan detectors.'],
+      ['Hf','Hafnium',72,178.49,'transition',4,6,'Absorbs neutrons. Used in nuclear reactor control rods and CPUs.'],
+      ['Ta','Tantalum',73,180.948,'transition',5,6,'Corrosion-resistant metal. Used in capacitors for smartphones.'],
+      ['W','Tungsten',74,183.84,'transition',6,6,'Highest melting point of all metals. Used in light bulb filaments.'],
+      ['Re','Rhenium',75,186.207,'transition',7,6,'Second highest melting point. Used in jet engine turbine blades.'],
+      ['Os','Osmium',76,190.23,'transition',8,6,'Densest naturally occurring element. Used in fountain pen nibs.'],
+      ['Ir','Iridium',77,192.217,'transition',9,6,'Second densest element. Extremely corrosion-resistant. Used in spark plugs.'],
+      ['Pt','Platinum',78,195.084,'transition',10,6,'Precious metal used in catalytic converters and jewellery.'],
+      ['Au','Gold',79,196.967,'transition',11,6,'Dense, non-reactive precious metal. Used in electronics and jewellery.'],
+      ['Hg','Mercury',80,200.592,'transition',12,6,'Only metal that is liquid at room temperature. Used in thermometers.'],
+      ['Tl','Thallium',81,204.383,'post',13,6,'Highly toxic metal. Used in specialised optical glass and research.'],
+      ['Pb','Lead',82,207.2,'post',14,6,'Dense, soft metal. Used in batteries, radiation shielding and historically in pipes.'],
+      ['Bi','Bismuth',83,208.980,'post',15,6,'Low toxicity heavy metal. Used in medicines and as a lead substitute.'],
+      ['Po','Polonium',84,209,'metalloid',16,6,'Highly radioactive. Discovered by Marie Curie. Used in anti-static devices.'],
+      ['At','Astatine',85,210,'halogen',17,6,'Rarest naturally occurring element. Highly radioactive halogen.'],
+      ['Rn','Radon',86,222,'noble',18,6,'Radioactive noble gas produced by uranium decay. Health hazard in buildings.'],
+      ['Fr','Francium',87,223,'alkali',1,7,'Most unstable of the naturally occurring elements. Extremely rare.'],
+      ['Ra','Radium',88,226,'alkaline',2,7,'Radioactive alkaline earth metal. Historically used in luminous paint.'],
+      ['Ac','Actinium',89,227,'actinide',0,7,'Radioactive. First actinide. Used in targeted cancer therapy.'],
+      ['Th','Thorium',90,232.038,'actinide',0,7,'Radioactive metal proposed as alternative nuclear fuel to uranium.'],
+      ['Pa','Protactinium',91,231.036,'actinide',0,7,'Rare and highly radioactive. Occurs in uranium ore deposits.'],
+      ['U','Uranium',92,238.029,'actinide',0,7,'Primary fuel for nuclear reactors. Used in weapons and medical applications.'],
+      ['Np','Neptunium',93,237,'actinide',0,7,'First synthetic transuranium element. Used in neutron detection instruments.'],
+      ['Pu','Plutonium',94,244,'actinide',0,7,'Used as fuel in nuclear reactors and in nuclear weapons. Highly toxic.'],
+      ['Am','Americium',95,243,'actinide',0,7,'Synthetic element. Used in household smoke detectors.'],
+      ['Cm','Curium',96,247,'actinide',0,7,'Named after Marie and Pierre Curie. Used as a power source in space probes.'],
+      ['Bk','Berkelium',97,247,'actinide',0,7,'Synthetic radioactive element produced in particle accelerators.'],
+      ['Cf','Californium',98,251,'actinide',0,7,'Used as a neutron source for starting nuclear reactors.'],
+      ['Es','Einsteinium',99,252,'actinide',0,7,'Named after Albert Einstein. Only produced in microgram quantities.'],
+      ['Fm','Fermium',100,257,'actinide',0,7,'Named after Enrico Fermi. Only produced in nuclear reactors.'],
+      ['Md','Mendelevium',101,258,'actinide',0,7,'Named after Dmitri Mendeleev, creator of the periodic table.'],
+      ['No','Nobelium',102,259,'actinide',0,7,'Named after Alfred Nobel. Produced by bombarding curium with carbon ions.'],
+      ['Lr','Lawrencium',103,266,'actinide',0,7,'Named after Ernest Lawrence. Last of the actinides.'],
+      ['Rf','Rutherfordium',104,267,'transition',4,7,'Named after Ernest Rutherford. First transactinide element.'],
+      ['Db','Dubnium',105,268,'transition',5,7,'Named after Dubna, Russia. Synthetic superheavy element.'],
+      ['Sg','Seaborgium',106,269,'transition',6,7,'Named after Glenn Seaborg. Extremely unstable synthetic element.'],
+      ['Bh','Bohrium',107,270,'transition',7,7,'Named after Niels Bohr. Only a few atoms have ever been produced.'],
+      ['Hs','Hassium',108,277,'transition',8,7,'Named after the German state of Hesse. Radioactive synthetic element.'],
+      ['Mt','Meitnerium',109,278,'transition',9,7,'Named after Lise Meitner. Predicted properties only.'],
+      ['Ds','Darmstadtium',110,281,'transition',10,7,'Named after Darmstadt, Germany. Extremely unstable.'],
+      ['Rg','Roentgenium',111,282,'transition',11,7,'Named after Wilhelm Roentgen, discoverer of X-rays.'],
+      ['Cn','Copernicium',112,285,'transition',12,7,'Named after Nicolaus Copernicus. Most volatile metal known.'],
+      ['Nh','Nihonium',113,286,'post',13,7,'Named after Japan (Nihon). First element discovered in Asia.'],
+      ['Fl','Flerovium',114,289,'post',14,7,'Named after Flerov Laboratory. Possibly a gas at room temperature.'],
+      ['Mc','Moscovium',115,290,'post',15,7,'Named after Moscow Oblast. Only a few atoms produced.'],
+      ['Lv','Livermorium',116,293,'post',16,7,'Named after Lawrence Livermore National Laboratory.'],
+      ['Ts','Tennessine',117,294,'halogen',17,7,'Named after Tennessee. Second heaviest element confirmed.'],
+      ['Og','Oganesson',118,294,'noble',18,7,'Named after Yuri Oganessian. Heaviest confirmed element. Likely solid.'],
+    ];
+
+    /* Grid positions: [atomicNumber, col(1-18), row(1-7)] */
+    /* We place each element by its group/period */
+    function buildPT() {
+      const grid = document.getElementById('pt-grid');
+      grid.innerHTML = '';
+
+      /* Create 7 rows × 18 cols of placeholder cells */
+      const cells = {}; /* "row,col" -> element */
+      ELEMENTS.forEach(e => {
+        const [sym,name,num,mass,cat,grp,period,desc] = e;
+        if (grp === 0) return; /* lanthanides/actinides placed below */
+        cells[period+','+grp] = e;
+      });
+
+      /* Place main table rows 1-7 */
+      for (let row = 1; row <= 7; row++) {
+        for (let col = 1; col <= 18; col++) {
+          const el = cells[row+','+col];
+          const div = document.createElement('div');
+          if (el) {
+            const [sym,name,num,mass,cat] = el;
+            div.className = 'el ' + CATEGORIES[cat].cls;
+            div.setAttribute('data-num', num);
+            div.innerHTML = `<span class="num">${num}</span><span class="sym">${sym}</span><span class="name">${name}</span>`;
+            div.addEventListener('click', () => showEl(el));
+          } else {
+            div.style.minHeight = '56px';
+          }
+          grid.appendChild(div);
+        }
+      }
+
+      /* Spacer rows between main table and lanthanides */
+      for (let col = 1; col <= 18; col++) {
+        const sp = document.createElement('div');
+        sp.style.minHeight = '8px';
+        grid.appendChild(sp);
+      }
+
+      /* Lanthanides row (57-71) */
+      for (let col = 1; col <= 18; col++) {
+        const lNum = 56 + col; /* 57-71 for cols 1-15 */
+        const el = ELEMENTS.find(e => e[2] === lNum && e[4]==='lanthanide');
+        const div = document.createElement('div');
+        if (el && col >= 4 && col <= 18) {
+          const [sym,name,num,mass,cat] = el;
+          div.className = 'el ' + CATEGORIES[cat].cls;
+          div.setAttribute('data-num', num);
+          div.innerHTML = `<span class="num">${num}</span><span class="sym">${sym}</span><span class="name">${name}</span>`;
+          div.addEventListener('click', () => showEl(el));
+        } else { div.style.minHeight='56px'; }
+        grid.appendChild(div);
+      }
+
+      /* Actinides row (89-103) */
+      for (let col = 1; col <= 18; col++) {
+        const aNum = 88 + col;
+        const el = ELEMENTS.find(e => e[2] === aNum && e[4]==='actinide');
+        const div = document.createElement('div');
+        if (el && col >= 4 && col <= 18) {
+          const [sym,name,num,mass,cat] = el;
+          div.className = 'el ' + CATEGORIES[cat].cls;
+          div.setAttribute('data-num', num);
+          div.innerHTML = `<span class="num">${num}</span><span class="sym">${sym}</span><span class="name">${name}</span>`;
+          div.addEventListener('click', () => showEl(el));
+        } else { div.style.minHeight='56px'; }
+        grid.appendChild(div);
+      }
+
+      buildLegend();
+    }
+
+    function buildLegend() {
+      const leg = document.getElementById('pt-legend');
+      leg.innerHTML = Object.entries(CATEGORIES).map(([k,v]) =>
+        `<div class="pt-leg-item">
+          <div class="pt-leg-dot ${v.cls}"></div>
+          <span>${v.label}</span>
+        </div>`
+      ).join('');
+    }
+
+    function showEl(el) {
+      const [sym,name,num,mass,cat,grp,period,desc] = el;
+      const catInfo = CATEGORIES[cat];
+      const bigSym = document.getElementById('el-big-sym');
+      bigSym.textContent = sym;
+      bigSym.className = 'el-big-sym ' + catInfo.cls;
+      document.getElementById('el-name').textContent = name;
+      document.getElementById('el-category').textContent = catInfo.label;
+      document.getElementById('el-props').innerHTML = `
+        <div class="el-prop"><div class="el-prop-label">Atomic Number</div><div class="el-prop-val">${num}</div></div>
+        <div class="el-prop"><div class="el-prop-label">Atomic Mass</div><div class="el-prop-val">${mass} u</div></div>
+        <div class="el-prop"><div class="el-prop-label">Symbol</div><div class="el-prop-val">${sym}</div></div>
+        <div class="el-prop"><div class="el-prop-label">Period / Group</div><div class="el-prop-val">${period} / ${grp||'—'}</div></div>
+      `;
+      document.getElementById('el-desc').textContent = desc;
+      document.getElementById('el-detail').classList.add('open');
+    }
+
+    function closeEl() {
+      document.getElementById('el-detail').classList.remove('open');
+    }
+
+    function searchEl(q) {
+      const qLow = q.toLowerCase().trim();
+      document.querySelectorAll('.el').forEach(el => {
+        if (!qLow) { el.classList.remove('dimmed'); return; }
+        const num = el.getAttribute('data-num');
+        const eData = ELEMENTS.find(e => String(e[2]) === num);
+        if (!eData) return;
+        const match = eData[0].toLowerCase().includes(qLow) ||
+                      eData[1].toLowerCase().includes(qLow) ||
+                      String(eData[2]).includes(qLow);
+        el.classList.toggle('dimmed', !match);
+      });
+    }
+
+    document.getElementById('el-detail').addEventListener('click', function(e){
+      if(e.target===this) closeEl();
+    });
+
+    /* ============================================================
+       SCIENTIFIC CALCULATOR
+    ============================================================ */
+    let calcExpr  = '';
+    let calcMode  = 'deg'; /* deg | rad */
+    let calcNew   = true;
+
+    function setMode(m) {
+      calcMode = m;
+      document.getElementById('mode-deg').classList.toggle('on', m==='deg');
+      document.getElementById('mode-rad').classList.toggle('on', m==='rad');
+    }
+
+    function updateDisplay(val, expr) {
+      document.getElementById('calc-display').textContent = val;
+      if (expr !== undefined) document.getElementById('calc-expr').textContent = expr;
+    }
+
+    function calcPush(val) {
+      if (calcNew && !isNaN(val) && val !== '.') {
+        calcExpr = val;
+        calcNew = false;
+      } else {
+        calcExpr += val;
+        calcNew = false;
+      }
+      updateDisplay(calcExpr);
+    }
+
+    function calcFn(fn) {
+      calcNew = false;
+      const toRad = x => calcMode === 'deg' ? x * Math.PI / 180 : x;
+      const toDeg = x => calcMode === 'deg' ? x * 180 / Math.PI : x;
+      let cur;
+      try { cur = parseFloat(eval(calcExpr)); } catch(e) { cur = 0; }
+
+      let result;
+      switch(fn) {
+        case 'sin':   result = Math.sin(toRad(cur)); break;
+        case 'cos':   result = Math.cos(toRad(cur)); break;
+        case 'tan':   result = Math.tan(toRad(cur)); break;
+        case 'asin':  result = toDeg(Math.asin(cur)); break;
+        case 'acos':  result = toDeg(Math.acos(cur)); break;
+        case 'atan':  result = toDeg(Math.atan(cur)); break;
+        case 'log':   result = Math.log10(cur); break;
+        case 'ln':    result = Math.log(cur); break;
+        case 'sqrt':  result = Math.sqrt(cur); break;
+        case 'cbrt':  result = Math.cbrt(cur); break;
+        case 'sq':    result = cur * cur; break;
+        case 'cube':  result = cur * cur * cur; break;
+        case 'inv':   result = 1 / cur; break;
+        case 'abs':   result = Math.abs(cur); break;
+        case 'exp':   result = Math.exp(cur); break;
+        case 'floor': result = Math.floor(cur); break;
+        case 'ceil':  result = Math.ceil(cur); break;
+        case 'pi':    calcExpr += String(Math.PI); updateDisplay(calcExpr); return;
+        case 'e':     calcExpr += String(Math.E);  updateDisplay(calcExpr); return;
+        default: return;
+      }
+      result = parseFloat(result.toPrecision(10));
+      document.getElementById('calc-expr').textContent = fn+'('+cur+') =';
+      calcExpr = String(result);
+      updateDisplay(calcExpr);
+      calcNew = true;
+    }
+
+    function calcEquals() {
+      try {
+        const expr = calcExpr
+          .replace(/×/g,'*').replace(/÷/g,'/')
+          .replace(/\^/g,'**');
+        const result = eval(expr); /* safe: user-controlled input only */
+        document.getElementById('calc-expr').textContent = calcExpr + ' =';
+        const pretty = parseFloat(parseFloat(result).toPrecision(12));
+        calcExpr = String(pretty);
+        updateDisplay(calcExpr);
+        calcNew = true;
+      } catch(e) {
+        updateDisplay('Error');
+        calcExpr = '';
+        calcNew = true;
+      }
+    }
+
+    function calcClear() { calcExpr=''; calcNew=true; updateDisplay('0',''); }
+    function calcBack()  {
+      calcExpr = calcExpr.slice(0,-1);
+      updateDisplay(calcExpr||'0');
+    }
+
+    function insertConst(val) {
+      switchTab('calculator', document.querySelectorAll('.tab-btn')[1]);
+      if (calcNew) { calcExpr = val; calcNew = false; }
+      else calcExpr += val;
+      updateDisplay(calcExpr);
+    }
+
+    /* Build calculator buttons */
+    function buildCalc() {
+      const layout = [
+        /* row 1: functions */
+        {l:'sin',  t:'fn', a:()=>calcFn('sin')},
+        {l:'cos',  t:'fn', a:()=>calcFn('cos')},
+        {l:'tan',  t:'fn', a:()=>calcFn('tan')},
+        {l:'log',  t:'fn', a:()=>calcFn('log')},
+        {l:'ln',   t:'fn', a:()=>calcFn('ln')},
+        /* row 2 */
+        {l:'x²',   t:'fn', a:()=>calcFn('sq')},
+        {l:'x³',   t:'fn', a:()=>calcFn('cube')},
+        {l:'√x',   t:'fn', a:()=>calcFn('sqrt')},
+        {l:'1/x',  t:'fn', a:()=>calcFn('inv')},
+        {l:'|x|',  t:'fn', a:()=>calcFn('abs')},
+        /* row 3 */
+        {l:'π',    t:'fn', a:()=>calcFn('pi')},
+        {l:'e',    t:'fn', a:()=>calcFn('e')},
+        {l:'(',    t:'num', a:()=>calcPush('(')},
+        {l:')',    t:'num', a:()=>calcPush(')')},
+        {l:'DEL',  t:'clr', a:()=>calcBack()},
+        /* row 4 */
+        {l:'7',    t:'num', a:()=>calcPush('7')},
+        {l:'8',    t:'num', a:()=>calcPush('8')},
+        {l:'9',    t:'num', a:()=>calcPush('9')},
+        {l:'÷',    t:'op',  a:()=>calcPush('/')},
+        {l:'AC',   t:'clr', a:()=>calcClear()},
+        /* row 5 */
+        {l:'4',    t:'num', a:()=>calcPush('4')},
+        {l:'5',    t:'num', a:()=>calcPush('5')},
+        {l:'6',    t:'num', a:()=>calcPush('6')},
+        {l:'×',    t:'op',  a:()=>calcPush('*')},
+        {l:'xʸ',   t:'fn',  a:()=>calcPush('**')},
+        /* row 6 */
+        {l:'1',    t:'num', a:()=>calcPush('1')},
+        {l:'2',    t:'num', a:()=>calcPush('2')},
+        {l:'3',    t:'num', a:()=>calcPush('3')},
+        {l:'−',    t:'op',  a:()=>calcPush('-')},
+        {l:'eˣ',   t:'fn',  a:()=>calcFn('exp')},
+        /* row 7 */
+        {l:'0',    t:'num', a:()=>calcPush('0'), span:2},
+        {l:'.',    t:'num', a:()=>calcPush('.')},
+        {l:'+',    t:'op',  a:()=>calcPush('+')},
+        {l:'=',    t:'eq',  a:()=>calcEquals()},
+      ];
+
+      const grid = document.getElementById('calc-grid');
+      grid.innerHTML = '';
+      layout.forEach(btn => {
+        const b = document.createElement('button');
+        b.className = 'cb ' + btn.t + (btn.span ? ' span'+btn.span : '');
+        b.textContent = btn.l;
+        b.addEventListener('click', btn.a);
+        grid.appendChild(b);
+      });
+    }
+
+    /* Keyboard support for calculator */
+    document.addEventListener('keydown', e => {
+      if (document.getElementById('tab-calculator').classList.contains('active')) {
+        const key = e.key;
+        if ('0123456789'.includes(key)) calcPush(key);
+        else if (key === '+') calcPush('+');
+        else if (key === '-') calcPush('-');
+        else if (key === '*') calcPush('*');
+        else if (key === '/') { e.preventDefault(); calcPush('/'); }
+        else if (key === '.') calcPush('.');
+        else if (key === '(' || key === ')') calcPush(key);
+        else if (key === 'Enter' || key === '=') { e.preventDefault(); calcEquals(); }
+        else if (key === 'Backspace') calcBack();
+        else if (key === 'Escape') calcClear();
+      }
+      if (key === 'Escape') {
+        closeEl();
+        if (typeof closeVoiceModal === 'function') closeVoiceModal();
+      }
+    });
+
+    /* ===== INIT ===== */
+    buildPT();
+    buildCalc();
+  </script>
+</body>
+</html>
