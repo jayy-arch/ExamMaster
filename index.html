@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - Your Learning Companion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="theme.js" defer></script>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">Exam<span>Master</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active" data-i18n="nav_home">Home</a></li>
+      <li><a href="tools.html" data-i18n="nav_tools">Tools</a></li>
+      <li><a href="materials.html" data-i18n="nav_materials">Materials</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="science.html">Science</a></li>
+      <li><a href="feedback.html" data-i18n="nav_feedback">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> Day Streak</div>
+      <select id="lang-selector" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="es">Espanol</option>
+        <option value="fr">Francais</option>
+        <option value="de">Deutsch</option>
+        <option value="pt">Portugues</option>
+        <option value="zh">Chinese</option>
+        <option value="ar">Arabic</option>
+        <option value="sw">Swahili</option>
+      </select>
+      <button class="voice-btn" onclick="openVoiceModal()">Voice Assistant</button>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
+    </div>
+  </nav>
+
+  <!-- VOICE MODAL -->
+  <div class="voice-modal-overlay" id="voice-modal-overlay">
+    <div class="voice-modal">
+      <h2>Voice Assistant</h2>
+      <p class="vm-sub">Navigate and control Exam Master with your voice</p>
+      <button class="voice-orb" id="voice-orb" onclick="startListening()">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 19.93V22h2v-1.07A8 8 0 0 0 20 13h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.93z"/></svg>
+      </button>
+      <div class="voice-status" id="voice-status">Click the button to speak</div>
+      <div class="voice-output" id="voice-output"></div>
+      <div class="vm-commands">
+        <span class="vm-cmd" onclick="runQuickCommand('open tools')">Open Tools</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open planner')">Open Planner</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open notes')">Note Summarizer</span>
+        <span class="vm-cmd" onclick="runQuickCommand('explain')">Explain Tool</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open feedback')">Feedback</span>
+        <span class="vm-cmd" onclick="runQuickCommand('log today')">Log Study</span>
+      </div>
+      <button class="voice-close" onclick="closeVoiceModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Struggling with <span>Schoolwork?</span></h1>
+      <p>Exam Master gives you AI-powered tools to understand, plan, and succeed on your own terms.</p>
+      <a href="tools.html" class="btn-primary">Explore Tools</a>
+    </div>
+  </section>
+
+  <!-- TOOLS SECTION -->
+  <section class="section" id="tools">
+    <h2 class="section-title">Pick Your <span>Study Tool</span></h2>
+    <p class="section-sub">Six tools designed around the most common reasons students struggle</p>
+    <div class="tools-grid">
+
+      <a href="ai-assistant.html" class="tool-card color-blue">
+        <div class="tool-icon">AI</div>
+        <h3>AI Study Assistant</h3>
+        <p>Paste your homework or essay prompt and get step-by-step guidance that teaches you, not just answers.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+
+      <a href="notes.html" class="tool-card color-green">
+        <div class="tool-icon">NOTES</div>
+        <h3>Smart Note Summarizer</h3>
+        <p>Upload messy notes or textbook pages and get clean summaries, key terms, and flashcards.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+
+      <a href="planner.html" class="tool-card color-orange">
+        <div class="tool-icon">PLAN</div>
+        <h3>Personalized Study Planner</h3>
+        <p>Enter your tests and assignments. Get a smart daily study plan that adapts as you go.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+
+      <a href="explain.html" class="tool-card color-purple">
+        <div class="tool-icon">EXP</div>
+        <h3>Explain It Differently</h3>
+        <p>Still confused? Get 3 different explanations: simple analogy, visual description, and a real world example.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+
+      <a href="accountability.html" class="tool-card color-red">
+        <div class="tool-icon">GOAL</div>
+        <h3>Accountability Partner</h3>
+        <p>Set study goals, build streaks, earn badges, and share progress with a parent or tutor.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+
+      <a href="peer.html" class="tool-card color-teal">
+        <div class="tool-icon">PEER</div>
+        <h3>Peer Study Matcher</h3>
+        <p>Get matched with classmates for peer tutoring. Built-in chat and video call ready.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- STUDY MATERIALS PREVIEW -->
+  <div class="alt-bg">
+    <div class="section-inner">
+      <section class="section" style="padding-top:0;padding-bottom:0;">
+        <h2 class="section-title">Study <span>Materials</span></h2>
+        <p class="section-sub">Your current and upcoming study content at a glance</p>
+        <div class="materials-grid">
+
+          <div class="material-card">
+            <span class="mat-badge current-badge">Current</span>
+            <h4>Algebra: Chapter 5 Quadratics</h4>
+            <p>Due: Nov 12, 2026</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
+            <small>65% complete</small>
+          </div>
+
+          <div class="material-card">
+            <span class="mat-badge current-badge">Current</span>
+            <h4>Biology: Cell Division Notes</h4>
+            <p>Due: Nov 13, 2026</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+            <small>40% complete</small>
+          </div>
+
+          <div class="material-card">
+            <span class="mat-badge future-badge">Upcoming</span>
+            <h4>History: World War II Essay</h4>
+            <p>Due: Nov 20, 2026</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:10%"></div></div>
+            <small>10% complete</small>
+          </div>
+
+          <div class="material-card">
+            <span class="mat-badge future-badge">Upcoming</span>
+            <h4>Chemistry: Periodic Table Test</h4>
+            <p>Due: Nov 25, 2026</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+            <small>Not started</small>
+          </div>
+
+        </div>
+        <div class="center-link" style="padding-bottom:72px;">
+          <a href="materials.html" class="btn-secondary">View All Materials</a>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- STREAK SECTION -->
+  <section class="section" id="streak-section">
+    <h2 class="section-title">Your Study <span>Streak</span></h2>
+    <div class="streak-display">
+      <div class="streak-info">
+        <div class="streak-number" id="streak-big">0</div>
+        <div class="streak-label">Days in a row</div>
+      </div>
+    </div>
+    <div class="streak-week" id="streak-week"></div>
+    <button class="btn-primary" onclick="logToday()">Log Today Study</button>
+    <p id="streak-msg" class="streak-msg"></p>
+  </section>
+
+ 
+  <div class="alt-bg">
+    <div class="section-inner">
+      <section class="section" style="padding-top:0;padding-bottom:0;">
+        <h2 class="section-title">What <span>Students Say</span></h2>
+        <p class="section-sub">Real feedback from real students</p>
+        <div class="reviews-grid">
+
+          <div class="review-card">
+            <div class="stars">
+              <span class="star filled">&#9733;</span><span class="star filled">&#9733;</span>
+              <span class="star filled">&#9733;</span><span class="star filled">&#9733;</span>
+              <span class="star filled">&#9733;</span>
+            </div>
+            <p>The AI Study Assistant explained calculus better than my teacher. I finally got it!</p>
+            <span class="reviewer">Maria, Grade 11</span>
+          </div>
+
+          <div class="review-card">
+            <div class="stars">
+              <span class="star filled">&#9733;</span><span class="star filled">&#9733;</span>
+              <span class="star filled">&#9733;</span><span class="star filled">&#9733;</span>
+              <span class="star empty">&#9733;</span>
+            </div>
+            <p>Smart Note Summarizer saved me hours before my exam. The flashcards are a game changer.</p>
+            <span class="reviewer">James, Grade 10</span>
+          </div>
+
+          <div class="review-card">
+            <div class="stars">
+              <span class="star filled">&#9733;</span><span class="star filled">&#9733;</span>
+              <span class="star filled">&#9733;</span><span class="star filled">&#9733;</span>
+              <span class="star filled">&#9733;</span>
+            </div>
+            <p>My streak is at 14 days! This app actually makes me want to study every day.</p>
+            <span class="reviewer">Aisha, Grade 12</span>
+          </div>
+
+        </div>
+        <div class="center-link" style="padding-bottom:72px;">
+          <a href="feedback.html" class="btn-secondary">Leave a Review</a>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Exam Master 2026 &mdash; Built for students who refuse to give up.</p>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="streak.js"></script>
+  <script src="voice.js"></script>
+</body>
+</html>
