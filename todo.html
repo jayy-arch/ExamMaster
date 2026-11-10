@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - To Do List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <script>(function(){var t=localStorage.getItem('sb_theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+  <style>
+    /* ===== LAYOUT ===== */
+    .todo-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media(max-width:720px){ .todo-layout { grid-template-columns:1fr; } }
+
+    /* ===== SIDEBAR ===== */
+    .todo-sidebar { position: sticky; top: 80px; }
+
+    .sidebar-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+    .sidebar-card h3 {
+      font-size: 0.88rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+
+    .filter-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .filter-list li {
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.14s, color 0.14s;
+    }
+    .filter-list li:hover { background: var(--bg-alt); color: var(--text); }
+    .filter-list li.active { background: var(--accent-soft); color: var(--accent); }
+    .filter-list li .count {
+      background: var(--border);
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      min-width: 22px;
+      text-align: center;
+    }
+    .filter-list li.active .count { background: var(--accent); color: #fff; }
+
+    .cat-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .cat-item {
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.14s;
+      color: var(--text);
+    }
+    .cat-item:hover { background: var(--bg-alt); }
+    .cat-item.active { background: var(--accent-soft); color: var(--accent); }
+    .cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-box {
+      background: var(--bg-alt);
+      border-radius: var(--radius);
+      padding: 12px;
+      text-align: center;
+    }
+    .stat-num  { font-size: 1.6rem; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 2px; }
+    .stat-lbl  { font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; }
+
+    /* progress ring */
+    .progress-ring-wrap { display: flex; justify-content: center; margin: 10px 0 6px; }
+    svg.ring { transform: rotate(-90deg); }
+    .ring-bg   { fill: none; stroke: var(--border); stroke-width: 6; }
+    .ring-fill { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.5s; }
+    .ring-label { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-align: center; }
+
+    /* ===== MAIN PANEL ===== */
+    .todo-main {}
+
+    /* Add task bar */
+    .add-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
+    }
+    .add-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .add-row input[type="text"] {
+      flex: 1; min-width: 200px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--surface);
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .add-row input[type="text"]:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+    }
+    .add-row select {
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      color: var(--text);
+      background: var(--surface);
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .add-row input[type="date"] {
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      color: var(--text);
+      background: var(--surface);
+      font-family: inherit;
+    }
+    .add-row-2 { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+
+    /* Task list */
+    .task-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .task-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.15s, transform 0.15s, opacity 0.3s;
+      position: relative;
+    }
+    .task-item:hover { box-shadow: var(--shadow-md); transform: translateX(2px); }
+    .task-item.done  { opacity: 0.55; }
+    .task-item.done .task-title { text-decoration: line-through; color: var(--text-secondary); }
+
+    /* priority stripe */
+    .task-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    }
+    .task-item.p-high::before   { background: #ef4444; }
+    .task-item.p-medium::before { background: #f59e0b; }
+    .task-item.p-low::before    { background: #22c55e; }
+
+    /* checkbox */
+    .task-check {
+      width: 20px; height: 20px; border-radius: 6px;
+      border: 2px solid var(--border-strong);
+      cursor: pointer; flex-shrink: 0; margin-top: 2px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, border-color 0.15s;
+      background: var(--surface);
+    }
+    .task-check:hover { border-color: var(--accent); }
+    .task-item.done .task-check { background: var(--accent); border-color: var(--accent); }
+    .task-check .tick { display: none; color: #fff; font-size: 0.75rem; font-weight: 800; }
+    .task-item.done .task-check .tick { display: block; }
+
+    .task-body { flex: 1; min-width: 0; }
+    .task-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 4px; word-break: break-word; }
+    .task-meta  { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .task-cat {
+      font-size: 0.72rem; font-weight: 700; padding: 2px 9px;
+      border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .task-due {
+      font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);
+      display: flex; align-items: center; gap: 3px;
+    }
+    .task-due.overdue { color: #ef4444; }
+    .task-due.today   { color: #f59e0b; }
+
+    .priority-badge {
+      font-size: 0.68rem; font-weight: 800; padding: 2px 8px;
+      border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .pb-high   { background: #fef2f2; color: #dc2626; }
+    .pb-medium { background: #fffbeb; color: #d97706; }
+    .pb-low    { background: #f0fdf4; color: #16a34a; }
+    [data-theme="dark"] .pb-high   { background: #450a0a; color: #f87171; }
+    [data-theme="dark"] .pb-medium { background: #1c1200; color: #fcd34d; }
+    [data-theme="dark"] .pb-low    { background: #052e16; color: #86efac; }
+
+    .task-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .task-btn {
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      padding: 5px 10px; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; color: var(--text-secondary); font-family: inherit;
+      transition: background 0.12s, color 0.12s;
+    }
+    .task-btn:hover { background: var(--bg-alt); color: var(--text); }
+    .task-btn.del:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--text-secondary); font-size: 0.95rem;
+    }
+    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state p { font-weight: 600; margin-bottom: 4px; color: var(--text); }
+    .empty-state small { font-size: 0.85rem; }
+
+    /* Section headers */
+    .task-section-label {
+      font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--text-secondary);
+      margin: 20px 0 10px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Sort/filter row */
+    .list-controls {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+    }
+    .list-controls span { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
+    .list-controls select {
+      padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 0.82rem; color: var(--text); background: var(--surface);
+      font-family: inherit; cursor: pointer;
+    }
+
+    /* category colours */
+    .c-purple { background:#ede9fe; color:#6d28d9; }
+    .c-blue   { background:#dbeafe; color:#1e40af; }
+    .c-green  { background:#dcfce7; color:#15803d; }
+    .c-orange { background:#ffedd5; color:#9a3412; }
+    .c-rose   { background:#fce7f3; color:#9d174d; }
+    .c-teal   { background:#ccfbf1; color:#0f766e; }
+    [data-theme="dark"] .c-purple { background:#2e1065; color:#c4b5fd; }
+    [data-theme="dark"] .c-blue   { background:#1e1b4b; color:#a5b4fc; }
+    [data-theme="dark"] .c-green  { background:#052e16; color:#86efac; }
+    [data-theme="dark"] .c-orange { background:#431407; color:#fdba74; }
+    [data-theme="dark"] .c-rose   { background:#4c0519; color:#f9a8d4; }
+    [data-theme="dark"] .c-teal   { background:#042f2e; color:#5eead4; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">Exam<span>Master</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="tools.html">Tools</a></li>
+      <li><a href="materials.html">Materials</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="science.html">Science</a></li>
+      <li><a href="todo.html" class="active">To Do</a></li>
+      <li><a href="feedback.html">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> Day Streak</div>
+      <button class="voice-btn" onclick="openVoiceModal()">Voice</button>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
+    </div>
+  </nav>
+
+  <!-- VOICE MODAL -->
+  <div class="voice-modal-overlay" id="voice-modal-overlay">
+    <div class="voice-modal">
+      <h2>Voice Assistant</h2>
+      <p class="vm-sub">Navigate Exam Master with your voice</p>
+      <button class="voice-orb" id="voice-orb" onclick="startListening()">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 19.93V22h2v-1.07A8 8 0 0 0 20 13h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.93z"/></svg>
+      </button>
+      <div class="voice-status" id="voice-status">Click the button to speak</div>
+      <div class="voice-output" id="voice-output"></div>
+      <div class="vm-commands">
+        <span class="vm-cmd" onclick="runQuickCommand('go home')">Home</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open tools')">Tools</span>
+      </div>
+      <button class="voice-close" onclick="closeVoiceModal()">Close</button>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <h1>To Do List</h1>
+    <p>Track your study tasks, assignments and deadlines in one place</p>
+  </div>
+
+  <section class="section">
+    <div class="todo-layout">
+
+      <!-- SIDEBAR -->
+      <aside class="todo-sidebar">
+
+        <div class="sidebar-card">
+          <h3>Overview</h3>
+          <div class="stats-grid">
+            <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-lbl">Total</div></div>
+            <div class="stat-box"><div class="stat-num" id="stat-done">0</div><div class="stat-lbl">Done</div></div>
+            <div class="stat-box"><div class="stat-num" id="stat-pending">0</div><div class="stat-lbl">Pending</div></div>
+            <div class="stat-box"><div class="stat-num" id="stat-overdue" style="color:#ef4444;">0</div><div class="stat-lbl">Overdue</div></div>
+          </div>
+          <div class="progress-ring-wrap">
+            <svg width="80" height="80" class="ring">
+              <circle class="ring-bg"   cx="40" cy="40" r="34"/>
+              <circle class="ring-fill" id="ring-fill" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+            </svg>
+          </div>
+          <div class="ring-label" id="ring-label">0% complete</div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>Filter</h3>
+          <ul class="filter-list">
+            <li class="active" onclick="setFilter('all',this)">All Tasks <span class="count" id="fc-all">0</span></li>
+            <li onclick="setFilter('pending',this)">Pending <span class="count" id="fc-pending">0</span></li>
+            <li onclick="setFilter('done',this)">Completed <span class="count" id="fc-done">0</span></li>
+            <li onclick="setFilter('today',this)">Due Today <span class="count" id="fc-today">0</span></li>
+            <li onclick="setFilter('overdue',this)">Overdue <span class="count" id="fc-overdue">0</span></li>
+            <li onclick="setFilter('high',this)">High Priority <span class="count" id="fc-high">0</span></li>
+          </ul>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>Categories</h3>
+          <ul class="cat-list" id="cat-list">
+            <li class="cat-item active" onclick="setCat('all',this)" data-cat="all">
+              <span class="cat-dot" style="background:#4f46e5;"></span> All Categories
+            </li>
+            <li class="cat-item" onclick="setCat('Mathematics',this)" data-cat="Mathematics">
+              <span class="cat-dot" style="background:#4f46e5;"></span> Mathematics
+            </li>
+            <li class="cat-item" onclick="setCat('Science',this)" data-cat="Science">
+              <span class="cat-dot" style="background:#0d9488;"></span> Science
+            </li>
+            <li class="cat-item" onclick="setCat('English',this)" data-cat="English">
+              <span class="cat-dot" style="background:#db2777;"></span> English
+            </li>
+            <li class="cat-item" onclick="setCat('History',this)" data-cat="History">
+              <span class="cat-dot" style="background:#c2410c;"></span> History
+            </li>
+            <li class="cat-item" onclick="setCat('Other',this)" data-cat="Other">
+              <span class="cat-dot" style="background:#6b7280;"></span> Other
+            </li>
+          </ul>
+        </div>
+
+        <div class="sidebar-card">
+          <button class="btn-secondary" style="width:100%;font-size:0.85rem;" onclick="clearDone()">Clear Completed</button>
+          <button class="btn-secondary" style="width:100%;font-size:0.85rem;margin-top:8px;" onclick="clearAll()">Clear All</button>
+        </div>
+
+      </aside>
+
+      <!-- MAIN -->
+      <main class="todo-main">
+
+        <!-- ADD TASK -->
+        <div class="add-bar">
+          <div class="add-row">
+            <input type="text" id="task-input" placeholder="Add a new task... e.g. Finish Algebra Chapter 5" />
+            <select id="task-cat">
+              <option value="Mathematics">Mathematics</option>
+              <option value="Science">Science</option>
+              <option value="English">English</option>
+              <option value="History">History</option>
+              <option value="Chemistry">Chemistry</option>
+              <option value="Biology">Biology</option>
+              <option value="Physics">Physics</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="add-row-2">
+            <input type="date" id="task-due" title="Due date"/>
+            <select id="task-priority">
+              <option value="high">High Priority</option>
+              <option value="medium" selected>Medium Priority</option>
+              <option value="low">Low Priority</option>
+            </select>
+            <button class="btn-primary" style="font-size:0.875rem;padding:10px 22px;" onclick="addTask()">Add Task</button>
+          </div>
+        </div>
+
+        <!-- LIST CONTROLS -->
+        <div class="list-controls">
+          <span id="list-label">All Tasks</span>
+          <select id="sort-select" onchange="renderList()">
+            <option value="added">Sort: Date Added</option>
+            <option value="due">Sort: Due Date</option>
+            <option value="priority">Sort: Priority</option>
+            <option value="alpha">Sort: A to Z</option>
+          </select>
+        </div>
+
+        <!-- TASK LIST -->
+        <div id="task-list"></div>
+
+      </main>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>Exam Master 2026 &mdash; Built for students who refuse to give up.</p>
+  </footer>
+
+  <script src="streak.js"></script>
+  <script src="voice.js"></script>
+  <script>
+    /* ===== THEME ===== */
+    function toggleTheme(){
+      var cur=document.documentElement.getAttribute('data-theme')||'light';
+      var next=cur==='dark'?'light':'dark';
+      document.documentElement.setAttribute('data-theme',next);
+      localStorage.setItem('sb_theme',next);
+      document.getElementById('theme-btn').textContent=next==='dark'?'Light Mode':'Dark Mode';
+    }
+    document.addEventListener('DOMContentLoaded',function(){
+      var s=localStorage.getItem('sb_theme')||'light';
+      document.getElementById('theme-btn').textContent=s==='dark'?'Light Mode':'Dark Mode';
+    });
+
+    /* ===== DATA ===== */
+    let tasks = [];
+    let activeFilter = 'all';
+    let activeCat    = 'all';
+
+    const CAT_COLORS = {
+      Mathematics:'c-purple', Science:'c-teal', English:'c-rose',
+      History:'c-orange', Chemistry:'c-blue', Biology:'c-green',
+      Physics:'c-blue', Other:'c-teal'
+    };
+    const PRIORITY_ORDER = { high:0, medium:1, low:2 };
+
+    function loadTasks(){
+      try { tasks = JSON.parse(localStorage.getItem('em_todo') || '[]'); }
+      catch(e){ tasks=[]; }
+    }
+    function saveTasks(){ localStorage.setItem('em_todo', JSON.stringify(tasks)); }
+
+    function todayStr(){ return new Date().toISOString().split('T')[0]; }
+
+    function isOverdue(t){
+      return !t.done && t.due && t.due < todayStr();
+    }
+    function isToday(t){
+      return t.due === todayStr();
+    }
+
+    /* ===== ADD TASK ===== */
+    function addTask(){
+      const inp = document.getElementById('task-input');
+      const title = inp.value.trim();
+      if(!title){ inp.style.borderColor='#ef4444'; inp.focus(); setTimeout(()=>inp.style.borderColor='',1500); return; }
+      tasks.unshift({
+        id:   Date.now(),
+        title,
+        cat:  document.getElementById('task-cat').value,
+        due:  document.getElementById('task-due').value,
+        priority: document.getElementById('task-priority').value,
+        done: false,
+        added: new Date().toISOString()
+      });
+      saveTasks();
+      inp.value = '';
+      document.getElementById('task-due').value = '';
+      renderAll();
+    }
+
+    /* ===== TOGGLE DONE ===== */
+    function toggleDone(id){
+      const t = tasks.find(t=>t.id===id);
+      if(t) t.done = !t.done;
+      saveTasks();
+      renderAll();
+    }
+
+    /* ===== DELETE ===== */
+    function deleteTask(id){
+      tasks = tasks.filter(t=>t.id!==id);
+      saveTasks();
+      renderAll();
+    }
+
+    /* ===== EDIT ===== */
+    function editTask(id){
+      const t = tasks.find(t=>t.id===id);
+      if(!t) return;
+      const newTitle = prompt('Edit task:', t.title);
+      if(newTitle && newTitle.trim()) t.title = newTitle.trim();
+      saveTasks();
+      renderAll();
+    }
+
+    /* ===== CLEAR ===== */
+    function clearDone(){ tasks = tasks.filter(t=>!t.done); saveTasks(); renderAll(); }
+    function clearAll(){
+      if(!confirm('Delete all tasks?')) return;
+      tasks = []; saveTasks(); renderAll();
+    }
+
+    /* ===== FILTER / CAT ===== */
+    function setFilter(f,el){
+      activeFilter = f;
+      document.querySelectorAll('.filter-list li').forEach(li=>li.classList.remove('active'));
+      el.classList.add('active');
+      renderAll();
+    }
+    function setCat(c,el){
+      activeCat = c;
+      document.querySelectorAll('.cat-item').forEach(li=>li.classList.remove('active'));
+      el.classList.add('active');
+      renderAll();
+    }
+
+    /* ===== FILTER LOGIC ===== */
+    function getFiltered(){
+      let list = [...tasks];
+      /* category */
+      if(activeCat !== 'all') list = list.filter(t=>t.cat===activeCat);
+      /* status filter */
+      switch(activeFilter){
+        case 'pending':  list = list.filter(t=>!t.done); break;
+        case 'done':     list = list.filter(t=>t.done); break;
+        case 'today':    list = list.filter(t=>isToday(t)); break;
+        case 'overdue':  list = list.filter(t=>isOverdue(t)); break;
+        case 'high':     list = list.filter(t=>t.priority==='high'&&!t.done); break;
+      }
+      /* sort */
+      const sort = document.getElementById('sort-select').value;
+      if(sort==='due'){
+        list.sort((a,b)=>{
+          if(!a.due && !b.due) return 0;
+          if(!a.due) return 1; if(!b.due) return -1;
+          return a.due.localeCompare(b.due);
+        });
+      } else if(sort==='priority'){
+        list.sort((a,b)=>PRIORITY_ORDER[a.priority]-PRIORITY_ORDER[b.priority]);
+      } else if(sort==='alpha'){
+        list.sort((a,b)=>a.title.localeCompare(b.title));
+      }
+      return list;
+    }
+
+    /* ===== RENDER ===== */
+    function renderList(){
+      const container = document.getElementById('task-list');
+      const filtered  = getFiltered();
+
+      if(!filtered.length){
+        container.innerHTML = `<div class="empty-state">
+          <div class="empty-icon">&#10003;</div>
+          <p>Nothing here</p>
+          <small>Add a task above or change your filter</small>
+        </div>`;
+        return;
+      }
+
+      /* Separate pending and done */
+      const pending = filtered.filter(t=>!t.done);
+      const done    = filtered.filter(t=>t.done);
+
+      let html = '';
+
+      if(pending.length){
+        if(activeFilter==='all') html += `<div class="task-section-label">Pending (${pending.length})</div>`;
+        pending.forEach(t=>{ html += taskHTML(t); });
+      }
+
+      if(done.length){
+        if(activeFilter==='all' || activeFilter==='done')
+          html += `<div class="task-section-label">Completed (${done.length})</div>`;
+        done.forEach(t=>{ html += taskHTML(t); });
+      }
+
+      container.innerHTML = html;
+    }
+
+    function taskHTML(t){
+      const catCls  = CAT_COLORS[t.cat] || 'c-teal';
+      const ov      = isOverdue(t);
+      const tod     = isToday(t);
+      let dueHTML = '';
+      if(t.due){
+        const d = new Date(t.due+'T00:00:00');
+        const label = d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+        const cls = ov ? 'task-due overdue' : tod ? 'task-due today' : 'task-due';
+        const icon = ov ? '&#9888; ' : tod ? '&#9201; ' : '&#128197; ';
+        dueHTML = `<span class="${cls}">${icon}${label}</span>`;
+      }
+      const pbCls = t.priority==='high' ? 'pb-high' : t.priority==='low' ? 'pb-low' : 'pb-medium';
+      return `<div class="task-item ${t.done?'done':''} p-${t.priority}" data-id="${t.id}">
+        <div class="task-check" onclick="toggleDone(${t.id})"><span class="tick">&#10003;</span></div>
+        <div class="task-body">
+          <div class="task-title">${escH(t.title)}</div>
+          <div class="task-meta">
+            <span class="task-cat ${catCls}">${escH(t.cat)}</span>
+            <span class="priority-badge ${pbCls}">${t.priority}</span>
+            ${dueHTML}
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="task-btn" onclick="editTask(${t.id})" title="Edit">Edit</button>
+          <button class="task-btn del" onclick="deleteTask(${t.id})" title="Delete">Delete</button>
+        </div>
+      </div>`;
+    }
+
+    function updateStats(){
+      const total   = tasks.length;
+      const done    = tasks.filter(t=>t.done).length;
+      const pending = tasks.filter(t=>!t.done).length;
+      const overdue = tasks.filter(t=>isOverdue(t)).length;
+      const today   = tasks.filter(t=>isToday(t)&&!t.done).length;
+      const high    = tasks.filter(t=>t.priority==='high'&&!t.done).length;
+      const pct     = total ? Math.round(done/total*100) : 0;
+
+      document.getElementById('stat-total').textContent   = total;
+      document.getElementById('stat-done').textContent    = done;
+      document.getElementById('stat-pending').textContent = pending;
+      document.getElementById('stat-overdue').textContent = overdue;
+
+      document.getElementById('fc-all').textContent     = total;
+      document.getElementById('fc-pending').textContent = pending;
+      document.getElementById('fc-done').textContent    = done;
+      document.getElementById('fc-today').textContent   = today;
+      document.getElementById('fc-overdue').textContent = overdue;
+      document.getElementById('fc-high').textContent    = high;
+
+      /* ring */
+      const circumference = 213.6;
+      const offset = circumference - (pct/100)*circumference;
+      document.getElementById('ring-fill').style.strokeDashoffset = offset;
+      document.getElementById('ring-label').textContent = pct+'% complete';
+
+      /* list label */
+      const labels = {all:'All Tasks',pending:'Pending',done:'Completed',
+                      today:'Due Today',overdue:'Overdue',high:'High Priority'};
+      document.getElementById('list-label').textContent = (labels[activeFilter]||'Tasks') +
+        ' — ' + getFiltered().length + ' item' + (getFiltered().length!==1?'s':'');
+    }
+
+    function renderAll(){ updateStats(); renderList(); }
+
+    function escH(s){
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* Enter key to add */
+    document.addEventListener('DOMContentLoaded', function(){
+      document.getElementById('task-input').addEventListener('keydown', function(e){
+        if(e.key==='Enter') addTask();
+      });
+    });
+
+    /* Seed sample tasks if empty */
+    function seedIfEmpty(){
+      if(tasks.length) return;
+      const today = todayStr();
+      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+      const tmr = tomorrow.toISOString().split('T')[0];
+      tasks = [
+        {id:1,title:'Complete Algebra Chapter 5 exercises',cat:'Mathematics',due:tmr,priority:'high',done:false,added:new Date().toISOString()},
+        {id:2,title:'Read Biology notes on Cell Division',cat:'Biology',due:today,priority:'medium',done:false,added:new Date().toISOString()},
+        {id:3,title:'Write History essay introduction',cat:'History',due:'2026-11-20',priority:'medium',done:false,added:new Date().toISOString()},
+        {id:4,title:'Review Chemistry periodic table',cat:'Chemistry',due:'2026-11-25',priority:'low',done:false,added:new Date().toISOString()},
+        {id:5,title:'Read Shakespeare Act 1',cat:'English',due:'2026-11-18',priority:'high',done:true,added:new Date().toISOString()},
+      ];
+      saveTasks();
+    }
+
+    /* ===== INIT ===== */
+    loadTasks();
+    seedIfEmpty();
+    renderAll();
+  </script>
+</body>
+</html>
