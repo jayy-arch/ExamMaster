@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - Smart Note Summarizer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">Exam Master</div>
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+      <li><a href="tools.html" class="active" data-i18n="nav_tools">Tools</a></li>
+      <li><a href="materials.html" data-i18n="nav_materials">Study Materials</a></li>
+      <li><a href="feedback.html" data-i18n="nav_feedback">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> <span data-i18n="streak">Day Streak</span></div>
+      <select id="lang-selector" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="es">Espanol</option>
+        <option value="fr">Francais</option>
+        <option value="de">Deutsch</option>
+        <option value="pt">Portugues</option>
+        <option value="zh">Chinese</option>
+        <option value="ar">Arabic</option>
+        <option value="sw">Swahili</option>
+      </select>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Smart Note Summarizer</h1>
+    <p>Paste your notes and get a clean summary, key terms, and flashcards</p>
+  </div>
+
+  <div class="tool-page">
+
+    <div class="form-group">
+      <label>Paste Your Notes Here</label>
+      <textarea id="notes-input" style="min-height:200px;" placeholder="Paste your class notes, textbook text, or any study material here..."></textarea>
+    </div>
+
+    <button class="btn-primary" onclick="summarizeNotes()">Summarize Notes</button>
+
+    <div id="notes-output" style="display:none;margin-top:28px;">
+
+      <div class="output-box">
+        <strong style="font-size:1.1rem;">Summary</strong>
+        <p id="summary-text" style="margin-top:12px;line-height:1.7;"></p>
+      </div>
+
+      <div class="output-box" style="margin-top:16px;">
+        <strong style="font-size:1.1rem;">Key Terms</strong>
+        <div id="key-terms" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="output-box" style="margin-top:16px;">
+        <strong style="font-size:1.1rem;">Flashcards</strong>
+        <p style="margin-top:6px;font-size:0.85rem;color:#5a6370;">Click a card to reveal the answer</p>
+        <div id="flashcards" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:12px;"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <p>Exam Master 2026 <span data-i18n="footer_text">Built for students who refuse to give up.</span></p>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="streak.js"></script>
+  <script>
+    function summarizeNotes() {
+      const input = document.getElementById('notes-input').value.trim();
+      if (!input) { alert('Please paste some notes first.'); return; }
+
+      const sentences = input.split(/[.!?]+/).filter(s => s.trim().length > 10);
+      const summaryCount = Math.max(2, Math.min(4, Math.ceil(sentences.length / 3)));
+      const summary = sentences.slice(0, summaryCount).join('. ').trim() + '.';
+
+      const words = input.split(/\s+/);
+      const stopWords = new Set(['the','a','an','is','are','was','were','and','or','but','in','on','at','to','of','for','with','it','this','that','they','their','there','be','have','has','had','do','did','will','would','can','could','should','from','by','as','not','we','you','i','he','she','his','her','its','our','your','my','so','if','about','into','which','who','what','when','where','how']);
+      const freq = {};
+      words.forEach(w => {
+        const clean = w.replace(/[^a-zA-Z]/g, '').toLowerCase();
+        if (clean.length > 4 && !stopWords.has(clean)) {
+          freq[clean] = (freq[clean] || 0) + 1;
+        }
+      });
+      const keyTerms = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, 8).map(e => e[0]);
+
+      const flashData = sentences.slice(0, 5).map((s, i) => ({
+        q: 'What is explained in point ' + (i + 1) + '?',
+        a: s.trim()
+      }));
+
+      document.getElementById('summary-text').textContent = summary;
+
+      const termsEl = document.getElementById('key-terms');
+      termsEl.innerHTML = keyTerms.map(t => '<span class="tag">' + t.charAt(0).toUpperCase() + t.slice(1) + '</span>').join('');
+
+      const flashEl = document.getElementById('flashcards');
+      flashEl.innerHTML = '';
+      flashData.forEach(fc => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#2c3e50;color:#fff;border-radius:10px;padding:16px;width:220px;cursor:pointer;font-size:0.88rem;line-height:1.5;';
+        card.setAttribute('data-side', 'q');
+        card.setAttribute('data-q', fc.q);
+        card.setAttribute('data-a', fc.a.replace(/</g, '&lt;'));
+        card.textContent = fc.q;
+        card.onclick = function() {
+          if (this.getAttribute('data-side') === 'q') {
+            this.textContent = this.getAttribute('data-a');
+            this.style.backgroundColor = '#3d7a74';
+            this.setAttribute('data-side', 'a');
+          } else {
+            this.textContent = this.getAttribute('data-q');
+            this.style.backgroundColor = '#2c3e50';
+            this.setAttribute('data-side', 'q');
+          }
+        };
+        flashEl.appendChild(card);
+      });
+
+      document.getElementById('notes-output').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
