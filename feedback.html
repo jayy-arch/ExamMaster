@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - Feedback</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="theme.js" defer></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Exam<span>Master</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="tools.html">Tools</a></li>
+      <li><a href="materials.html">Materials</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="science.html">Science</a></li>
+      <li><a href="feedback.html" class="active">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> Day Streak</div>
+      <select id="lang-selector" onchange="changeLanguage(this.value)">
+        <option value="en">English</option><option value="es">Espanol</option>
+        <option value="fr">Francais</option><option value="de">Deutsch</option>
+        <option value="pt">Portugues</option><option value="zh">Chinese</option>
+        <option value="ar">Arabic</option><option value="sw">Swahili</option>
+      </select>
+      <button class="voice-btn" onclick="openVoiceModal()">Voice Assistant</button>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
+    </div>
+  </nav>
+
+  <div class="voice-modal-overlay" id="voice-modal-overlay">
+    <div class="voice-modal">
+      <h2>Voice Assistant</h2>
+      <p class="vm-sub">Navigate and control Exam Master with your voice</p>
+      <button class="voice-orb" id="voice-orb" onclick="startListening()">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 19.93V22h2v-1.07A8 8 0 0 0 20 13h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.93z"/></svg>
+      </button>
+      <div class="voice-status" id="voice-status">Click the button to speak</div>
+      <div class="voice-output" id="voice-output"></div>
+      <div class="vm-commands">
+        <span class="vm-cmd" onclick="runQuickCommand('go home')">Home</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open tools')">Tools</span>
+      </div>
+      <button class="voice-close" onclick="closeVoiceModal()">Close</button>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <h1>Student Feedback</h1>
+    <p>Your feedback helps us improve Exam Master for everyone</p>
+  </div>
+
+  <section class="section">
+    <div class="panel" style="max-width:640px;margin:0 auto 48px;">
+      <h3>Leave a Review</h3>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="reviewer-name" placeholder="e.g. John" />
+      </div>
+      <div class="form-group">
+        <label>Grade / Year</label>
+        <input type="text" id="reviewer-grade" placeholder="e.g. Grade 10" />
+      </div>
+      <div class="form-group">
+        <label>Tool You Used</label>
+        <select id="reviewer-tool">
+          <option value="">Select a tool</option>
+          <option>AI Study Assistant</option>
+          <option>Smart Note Summarizer</option>
+          <option>Personalized Study Planner</option>
+          <option>Explain It Differently</option>
+          <option>Accountability Partner</option>
+          <option>Peer Study Matcher</option>
+          <option>General Experience</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Your Rating</label>
+        <div class="star-rating" id="star-input">
+          <input type="radio" name="rating" id="s5" value="5" /><label for="s5">&#9733;</label>
+          <input type="radio" name="rating" id="s4" value="4" /><label for="s4">&#9733;</label>
+          <input type="radio" name="rating" id="s3" value="3" /><label for="s3">&#9733;</label>
+          <input type="radio" name="rating" id="s2" value="2" /><label for="s2">&#9733;</label>
+          <input type="radio" name="rating" id="s1" value="1" /><label for="s1">&#9733;</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Your Review</label>
+        <textarea id="reviewer-text" placeholder="Share your experience with Exam Master..."></textarea>
+      </div>
+      <button class="btn-primary" onclick="submitReview()">Submit Review</button>
+      <p id="review-success" style="color:#15803d;font-weight:600;margin-top:12px;display:none;">Review submitted. Thank you!</p>
+    </div>
+
+    <h2 class="section-title" style="margin-bottom:28px;">Student Reviews</h2>
+    <div class="reviews-grid" id="reviews-container">
+      <div class="review-card">
+        <div class="stars"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span></div>
+        <p>The AI Study Assistant explained calculus better than my teacher. I finally got it!</p>
+        <span class="reviewer">Maria, Grade 11</span>
+      </div>
+      <div class="review-card">
+        <div class="stars"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star empty">&#9733;</span></div>
+        <p>Smart Note Summarizer saved me hours before my exam. The flashcards are a game changer.</p>
+        <span class="reviewer">James, Grade 10</span>
+      </div>
+      <div class="review-card">
+        <div class="stars"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span></div>
+        <p>My streak is at 14 days! This app actually makes me want to study every day.</p>
+        <span class="reviewer">Aisha, Grade 12</span>
+      </div>
+      <div class="review-card">
+        <div class="stars"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star empty">&#9733;</span></div>
+        <p>The Study Planner broke my exam prep into small steps. I never felt overwhelmed again.</p>
+        <span class="reviewer">Carlos, Grade 9</span>
+      </div>
+      <div class="review-card">
+        <div class="stars"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span></div>
+        <p>Explain It Differently is magic. Got the same concept explained 3 ways and one of them just clicked.</p>
+        <span class="reviewer">Priya, Grade 11</span>
+      </div>
+      <div class="review-card">
+        <div class="stars"><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star filled">&#9733;</span><span class="star empty">&#9733;</span><span class="star empty">&#9733;</span></div>
+        <p>Peer Study Matcher works well but I wish there were more students in my area available.</p>
+        <span class="reviewer">Tom, Grade 10</span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>Exam Master 2026 &mdash; Built for students who refuse to give up.</p>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="streak.js"></script>
+  <script src="voice.js"></script>
+  <script>
+    function submitReview() {
+      const name = document.getElementById('reviewer-name').value.trim();
+      const grade = document.getElementById('reviewer-grade').value.trim();
+      const text = document.getElementById('reviewer-text').value.trim();
+      const ratingEl = document.querySelector('input[name="rating"]:checked');
+      if (!name || !text || !ratingEl) { alert('Please fill in your name, review, and rating.'); return; }
+      const rating = parseInt(ratingEl.value);
+      const container = document.getElementById('reviews-container');
+      let starsHTML = '';
+      for (let i = 1; i <= 5; i++) starsHTML += '<span class="star ' + (i <= rating ? 'filled' : 'empty') + '">&#9733;</span>';
+      const card = document.createElement('div');
+      card.className = 'review-card';
+      card.innerHTML = '<div class="stars">' + starsHTML + '</div><p>' + text.replace(/</g,'&lt;') + '</p><span class="reviewer">' + name.replace(/</g,'&lt;') + (grade ? ', ' + grade.replace(/</g,'&lt;') : '') + '</span>';
+      container.insertBefore(card, container.firstChild);
+      document.getElementById('reviewer-name').value = '';
+      document.getElementById('reviewer-grade').value = '';
+      document.getElementById('reviewer-tool').value = '';
+      document.getElementById('reviewer-text').value = '';
+      document.querySelectorAll('input[name="rating"]').forEach(r => r.checked = false);
+      const s = document.getElementById('review-success');
+      s.style.display = 'block';
+      setTimeout(() => s.style.display = 'none', 3000);
+    }
+  </script>
+</body>
+</html>
