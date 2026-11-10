@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - Study Planner</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">Exam Master</div>
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+      <li><a href="tools.html" class="active" data-i18n="nav_tools">Tools</a></li>
+      <li><a href="materials.html" data-i18n="nav_materials">Study Materials</a></li>
+      <li><a href="feedback.html" data-i18n="nav_feedback">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> <span data-i18n="streak">Day Streak</span></div>
+      <select id="lang-selector" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="es">Espanol</option>
+        <option value="fr">Francais</option>
+        <option value="de">Deutsch</option>
+        <option value="pt">Portugues</option>
+        <option value="zh">Chinese</option>
+        <option value="ar">Arabic</option>
+        <option value="sw">Swahili</option>
+      </select>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Personalized Study Planner</h1>
+    <p>Add your assignments and get a smart day-by-day study schedule</p>
+  </div>
+
+  <div class="tool-page">
+
+    <div class="panel">
+      <h3>Add Assignment or Test</h3>
+      <div class="form-group">
+        <label>Subject</label>
+        <input type="text" id="plan-subject" placeholder="e.g. Mathematics" />
+      </div>
+      <div class="form-group">
+        <label>Topic or Task</label>
+        <input type="text" id="plan-topic" placeholder="e.g. Chapter 5 review" />
+      </div>
+      <div class="form-group">
+        <label>Due Date</label>
+        <input type="date" id="plan-due" />
+      </div>
+      <div class="form-group">
+        <label>Difficulty</label>
+        <select id="plan-difficulty">
+          <option value="1">Easy</option>
+          <option value="2" selected>Medium</option>
+          <option value="3">Hard</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="addTask()">Add to Plan</button>
+    </div>
+
+    <div id="plan-table-wrapper" style="display:none;">
+      <h3 style="font-weight:700;margin-bottom:16px;color:#2c3e50;">Your Study Plan</h3>
+      <table class="planner-table">
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th>Subject</th>
+            <th>Task</th>
+            <th>Study Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="plan-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <p>Exam Master 2026 <span data-i18n="footer_text">Built for students who refuse to give up.</span></p>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="streak.js"></script>
+  <script>
+    const tasks = [];
+
+    function addTask() {
+      const subject = document.getElementById('plan-subject').value.trim();
+      const topic = document.getElementById('plan-topic').value.trim();
+      const due = document.getElementById('plan-due').value;
+      const difficulty = parseInt(document.getElementById('plan-difficulty').value);
+
+      if (!subject || !topic || !due) { alert('Please fill in all fields.'); return; }
+
+      tasks.push({ subject, topic, due, difficulty });
+      tasks.sort((a, b) => new Date(a.due) - new Date(b.due));
+      renderPlan();
+
+      document.getElementById('plan-subject').value = '';
+      document.getElementById('plan-topic').value = '';
+      document.getElementById('plan-due').value = '';
+      document.getElementById('plan-difficulty').value = '2';
+    }
+
+    function renderPlan() {
+      const tbody = document.getElementById('plan-body');
+      tbody.innerHTML = '';
+
+      tasks.forEach((task) => {
+        const dueDate = new Date(task.due);
+        const today = new Date();
+        const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+        const sessions = task.difficulty;
+        const timePerSession = task.difficulty === 1 ? '30 mins' : task.difficulty === 2 ? '45 mins' : '60 mins';
+
+        for (let s = 1; s <= sessions; s++) {
+          const sessionDate = new Date();
+          sessionDate.setDate(today.getDate() + Math.floor((daysLeft / sessions) * (s - 1)));
+          const dayLabel = s === sessions
+            ? 'Final Review (' + dueDate.toDateString() + ')'
+            : 'Session ' + s + ' (' + sessionDate.toDateString() + ')';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + dayLabel + '</td>' +
+            '<td>' + task.subject.replace(/</g,'&lt;') + '</td>' +
+            '<td>' + task.topic.replace(/</g,'&lt;') + '</td>' +
+            '<td>' + timePerSession + '</td>' +
+            '<td><button onclick="this.textContent=\'Done\';this.style.backgroundColor=\'#3d7a74\';this.style.color=\'#fff\';this.disabled=true;" style="padding:4px 12px;border:none;border-radius:6px;background:#d8dfe8;cursor:pointer;font-weight:600;color:#2c3e50;">Mark Done</button></td>';
+          tbody.appendChild(tr);
+        }
+      });
+
+      document.getElementById('plan-table-wrapper').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
