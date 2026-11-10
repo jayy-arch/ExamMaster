@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="theme.js" defer></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Exam<span>Master</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="tools.html" class="active">Tools</a></li>
+      <li><a href="materials.html">Materials</a></li>
+      <li><a href="resources.html">Resources</a></li>
+      <li><a href="science.html">Science</a></li>
+      <li><a href="feedback.html">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> Day Streak</div>
+      <select id="lang-selector" onchange="changeLanguage(this.value)">
+        <option value="en">English</option><option value="es">Espanol</option>
+        <option value="fr">Francais</option><option value="de">Deutsch</option>
+        <option value="pt">Portugues</option><option value="zh">Chinese</option>
+        <option value="ar">Arabic</option><option value="sw">Swahili</option>
+      </select>
+      <button class="voice-btn" onclick="openVoiceModal()">Voice Assistant</button>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
+    </div>
+  </nav>
+
+  <div class="voice-modal-overlay" id="voice-modal-overlay">
+    <div class="voice-modal">
+      <h2>Voice Assistant</h2>
+      <p class="vm-sub">Navigate and control Exam Master with your voice</p>
+      <button class="voice-orb" id="voice-orb" onclick="startListening()">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 19.93V22h2v-1.07A8 8 0 0 0 20 13h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.93z"/></svg>
+      </button>
+      <div class="voice-status" id="voice-status">Click the button to speak</div>
+      <div class="voice-output" id="voice-output"></div>
+      <div class="vm-commands">
+        <span class="vm-cmd" onclick="runQuickCommand('go home')">Home</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open planner')">Planner</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open notes')">Notes</span>
+        <span class="vm-cmd" onclick="runQuickCommand('explain')">Explain</span>
+      </div>
+      <button class="voice-close" onclick="closeVoiceModal()">Close</button>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <h1>Study Tools</h1>
+    <p>Choose the tool that fits what you need right now</p>
+  </div>
+
+  <section class="section">
+    <div class="tools-grid">
+      <a href="ai-assistant.html" class="tool-card color-blue">
+        <div class="tool-icon">AI</div>
+        <h3>AI Study Assistant</h3>
+        <p>Paste your homework or essay prompt and get step-by-step guidance that teaches you, not just answers.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+      <a href="notes.html" class="tool-card color-green">
+        <div class="tool-icon">NOTES</div>
+        <h3>Smart Note Summarizer</h3>
+        <p>Upload messy notes or textbook pages and get clean summaries, key terms, and flashcards.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+      <a href="planner.html" class="tool-card color-orange">
+        <div class="tool-icon">PLAN</div>
+        <h3>Personalized Study Planner</h3>
+        <p>Enter your tests and assignments. Get a smart daily study plan that adapts as you go.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+      <a href="explain.html" class="tool-card color-purple">
+        <div class="tool-icon">EXP</div>
+        <h3>Explain It Differently</h3>
+        <p>Still confused? Get 3 different explanations: simple analogy, visual description, and a real world example.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+      <a href="accountability.html" class="tool-card color-red">
+        <div class="tool-icon">GOAL</div>
+        <h3>Accountability Partner</h3>
+        <p>Set study goals, build streaks, earn badges, and share progress with a parent or tutor.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+      <a href="peer.html" class="tool-card color-teal">
+        <div class="tool-icon">PEER</div>
+        <h3>Peer Study Matcher</h3>
+        <p>Get matched with classmates for peer tutoring. Built-in chat and video call ready.</p>
+        <span class="tool-btn">Open</span>
+      </a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>Exam Master 2026 &mdash; Built for students who refuse to give up.</p>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="streak.js"></script>
+  <script src="voice.js"></script>
+</body>
+</html>
