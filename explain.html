@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - Explain It Differently</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="theme.js" defer></script>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Exam<span>Master</span></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="tools.html" class="active">Tools</a></li>
+      <li><a href="materials.html">Materials</a></li>
+      <li><a href="feedback.html">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> Day Streak</div>
+      <select id="lang-selector" onchange="changeLanguage(this.value)">
+        <option value="en">English</option><option value="es">Espanol</option>
+        <option value="fr">Francais</option><option value="de">Deutsch</option>
+        <option value="pt">Portugues</option><option value="zh">Chinese</option>
+        <option value="ar">Arabic</option><option value="sw">Swahili</option>
+      </select>
+      <button class="voice-btn" onclick="openVoiceModal()">Voice Assistant</button>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">Dark Mode</button>
+    </div>
+  </nav>
+
+  <div class="voice-modal-overlay" id="voice-modal-overlay">
+    <div class="voice-modal">
+      <h2>Voice Assistant</h2>
+      <p class="vm-sub">Navigate Exam Master with your voice</p>
+      <button class="voice-orb" id="voice-orb" onclick="startListening()">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 19.93V22h2v-1.07A8 8 0 0 0 20 13h-2a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.93z"/></svg>
+      </button>
+      <div class="voice-status" id="voice-status">Click the button to speak</div>
+      <div class="voice-output" id="voice-output"></div>
+      <div class="vm-commands">
+        <span class="vm-cmd" onclick="runQuickCommand('go home')">Home</span>
+        <span class="vm-cmd" onclick="runQuickCommand('open tools')">All Tools</span>
+      </div>
+      <button class="voice-close" onclick="closeVoiceModal()">Close</button>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <h1>Explain It Differently</h1>
+    <p>Get 3 different explanations: simple analogy, visual description, and a real world example</p>
+  </div>
+
+  <div class="tool-page">
+    <div class="panel">
+      <div class="form-group">
+        <label>What concept are you confused about?</label>
+        <input type="text" id="explain-input" placeholder="e.g. Photosynthesis, Pythagorean theorem, Supply and demand" />
+      </div>
+      <button class="btn-primary" onclick="explainIt()">Explain It 3 Ways</button>
+    </div>
+
+    <div id="explain-output" style="display:none;">
+      <div class="output-box" style="border-left:3px solid #4f46e5;margin-bottom:14px;">
+        <strong style="color:#4f46e5;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;">Simple Analogy</strong>
+        <p id="exp-analogy" style="margin-top:10px;"></p>
+      </div>
+      <div class="output-box" style="border-left:3px solid #0f766e;margin-bottom:14px;">
+        <strong style="color:#0f766e;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;">Visual Description</strong>
+        <p id="exp-visual" style="margin-top:10px;"></p>
+      </div>
+      <div class="output-box" style="border-left:3px solid #c2410c;">
+        <strong style="color:#c2410c;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.5px;">Real World Example</strong>
+        <p id="exp-realworld" style="margin-top:10px;"></p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer"><p>Exam Master 2026 &mdash; Built for students who refuse to give up.</p></footer>
+
+  <script src="i18n.js"></script>
+  <script src="streak.js"></script>
+  <script src="voice.js"></script>
+  <script>
+    const conceptDB = {
+      photosynthesis: { analogy:"Think of a plant like a solar-powered kitchen. The sun is the electricity, water and air are the ingredients, and food (sugar) is what gets cooked. The leaves are the kitchen where everything happens.", visual:"Picture a leaf as a green solar panel. Tiny pores on the bottom suck in carbon dioxide. Roots push water up through a straw-like tube to the leaf. Inside the leaf, green cells trap sunlight and mix everything together to make sugar, releasing oxygen as a leftover gas.", realworld:"Every time you eat a fruit, vegetable, or anything made from plants, you are eating the product of photosynthesis. Plants used sunlight to build that food from just water and air." },
+      pythagoras: { analogy:"Imagine you have a right-angled corner of a room. The two walls are the shorter sides, and if you stretched a rope diagonally from corner to corner, that rope is the hypotenuse. Wall 1 squared plus wall 2 squared always equals rope squared.", visual:"Draw a right triangle. Label the two shorter sides a and b, and the longest side c. Draw squares on each side. The area of the two smaller squares added together exactly equals the area of the big square on c.", realworld:"Builders use this every day to make sure corners are perfectly square. If a wall is 3m and the floor is 4m, the diagonal should be exactly 5m." },
+      gravity: { analogy:"Gravity is like an invisible elastic band between every object. The bigger the object, the stronger the band. Earth is so massive its band pulls everything toward its center.", visual:"Imagine space as a stretched rubber sheet. Place a heavy ball on it. It makes a dip. Roll a marble nearby and it curves toward the heavy ball.", realworld:"When you drop your phone, gravity pulls it at 9.8m per second squared. The moon stays in orbit because gravity pulls it inward just enough to match its sideways speed." },
+      default: { analogy:"Think of this concept like learning to ride a bike. At first the rules seem complex, but once you understand the core idea, everything else falls into place. Find the central rule that everything connects to.", visual:"Picture the concept as a tree. The trunk is the main idea. Each branch is a sub-topic. The leaves are the specific details and examples. Understanding the trunk makes the branches easier to remember.", realworld:"This concept appears constantly in everyday life. Once you recognize the pattern, you will start noticing it in news, conversations, and problems around you." }
+    };
+    function explainIt() {
+      const input = document.getElementById('explain-input').value.trim().toLowerCase();
+      if (!input) { alert('Please enter a concept.'); return; }
+      let data = conceptDB.default;
+      Object.keys(conceptDB).forEach(k => { if (input.includes(k)) data = conceptDB[k]; });
+      document.getElementById('exp-analogy').textContent = data.analogy;
+      document.getElementById('exp-visual').textContent = data.visual;
+      document.getElementById('exp-realworld').textContent = data.realworld;
+      document.getElementById('explain-output').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
