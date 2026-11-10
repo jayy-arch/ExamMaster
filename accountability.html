@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exam Master - Accountability Partner</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-brand">Exam Master</div>
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+      <li><a href="tools.html" class="active" data-i18n="nav_tools">Tools</a></li>
+      <li><a href="materials.html" data-i18n="nav_materials">Study Materials</a></li>
+      <li><a href="feedback.html" data-i18n="nav_feedback">Feedback</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="streak-badge"><span id="streak-count">0</span> <span data-i18n="streak">Day Streak</span></div>
+      <select id="lang-selector" onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="es">Espanol</option>
+        <option value="fr">Francais</option>
+        <option value="de">Deutsch</option>
+        <option value="pt">Portugues</option>
+        <option value="zh">Chinese</option>
+        <option value="ar">Arabic</option>
+        <option value="sw">Swahili</option>
+      </select>
+    </div>
+  </nav>
+
+  <div class="page-header" style="background-color:#c62828;">
+    <h1>Accountability Partner</h1>
+    <p>Set goals, build streaks, earn badges, and track your progress</p>
+  </div>
+
+  <div class="tool-page">
+
+    <!-- STREAK -->
+    <div style="background:#fff;border-radius:10px;padding:28px;box-shadow:0 2px 10px rgba(0,0,0,0.08);text-align:center;margin-bottom:28px;">
+      <h3 style="font-weight:700;margin-bottom:16px;">Study Streak</h3>
+      <div class="streak-display">
+        <div class="streak-info">
+          <div class="streak-number" id="streak-big">0</div>
+          <div class="streak-label">Days in a row</div>
+        </div>
+      </div>
+      <div class="streak-week" id="streak-week"></div>
+      <button class="btn-primary" style="background-color:#c62828;" onclick="logToday()">Log Today Study</button>
+      <p id="streak-msg" class="streak-msg"></p>
+    </div>
+
+    <!-- GOALS -->
+    <div style="background:#fff;border-radius:10px;padding:28px;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin-bottom:28px;">
+      <h3 style="font-weight:700;margin-bottom:20px;">My Study Goals</h3>
+      <div class="form-group">
+        <label>Set a New Goal</label>
+        <input type="text" id="goal-input" placeholder="e.g. Study 30 minutes every day this week" />
+      </div>
+      <button class="btn-primary" style="background-color:#c62828;" onclick="addGoal()">Add Goal</button>
+      <ul id="goal-list" style="margin-top:20px;list-style:none;padding:0;"></ul>
+    </div>
+
+    <!-- BADGES -->
+    <div style="background:#fff;border-radius:10px;padding:28px;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+      <h3 style="font-weight:700;margin-bottom:20px;">Earned Badges</h3>
+      <div class="badge-grid">
+        <div class="badge" id="badge-1day">
+          <div class="badge-icon">DAY 1</div>
+          <div class="badge-name">First Step</div>
+        </div>
+        <div class="badge locked" id="badge-3day">
+          <div class="badge-icon">3 DAYS</div>
+          <div class="badge-name">Getting Started</div>
+        </div>
+        <div class="badge locked" id="badge-7day">
+          <div class="badge-icon">7 DAYS</div>
+          <div class="badge-name">One Week Strong</div>
+        </div>
+        <div class="badge locked" id="badge-14day">
+          <div class="badge-icon">14 DAYS</div>
+          <div class="badge-name">Two Week Warrior</div>
+        </div>
+        <div class="badge locked" id="badge-30day">
+          <div class="badge-icon">30 DAYS</div>
+          <div class="badge-name">Monthly Champion</div>
+        </div>
+        <div class="badge locked" id="badge-goal">
+          <div class="badge-icon">GOAL</div>
+          <div class="badge-name">Goal Setter</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <p>Exam Master 2026 <span data-i18n="footer_text">Built for students who refuse to give up.</span></p>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="streak.js"></script>
+  <script>
+    function updateBadges(count) {
+      if (count >= 1) document.getElementById('badge-1day').classList.remove('locked');
+      if (count >= 3) document.getElementById('badge-3day').classList.remove('locked');
+      if (count >= 7) document.getElementById('badge-7day').classList.remove('locked');
+      if (count >= 14) document.getElementById('badge-14day').classList.remove('locked');
+      if (count >= 30) document.getElementById('badge-30day').classList.remove('locked');
+    }
+
+    const originalLogToday = window.logToday;
+    window.logToday = function() {
+      originalLogToday();
+      const data = JSON.parse(localStorage.getItem('sb_streak') || '{"count":0}');
+      updateBadges(data.count);
+    };
+
+    const data = JSON.parse(localStorage.getItem('sb_streak') || '{"count":0}');
+    updateBadges(data.count);
+
+    const goals = JSON.parse(localStorage.getItem('sb_goals') || '[]');
+    renderGoals();
+
+    function addGoal() {
+      const input = document.getElementById('goal-input').value.trim();
+      if (!input) return;
+      goals.push({ text: input, done: false });
+      localStorage.setItem('sb_goals', JSON.stringify(goals));
+      document.getElementById('goal-input').value = '';
+      renderGoals();
+      document.getElementById('badge-goal').classList.remove('locked');
+    }
+
+    function renderGoals() {
+      const list = document.getElementById('goal-list');
+      list.innerHTML = '';
+      goals.forEach((g, i) => {
+        const li = document.createElement('li');
+        li.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eee;';
+        li.innerHTML = '<input type="checkbox" ' + (g.done ? 'checked' : '') + ' onchange="toggleGoal(' + i + ',this)" style="width:18px;height:18px;cursor:pointer;">' +
+          '<span style="' + (g.done ? 'text-decoration:line-through;color:#999;' : '') + 'font-size:0.95rem;">' + g.text.replace(/</g,'&lt;') + '</span>';
+        list.appendChild(li);
+      });
+    }
+
+    function toggleGoal(i, el) {
+      goals[i].done = el.checked;
+      localStorage.setItem('sb_goals', JSON.stringify(goals));
+      renderGoals();
+    }
+  </script>
+</body>
+</html>
